@@ -2,7 +2,7 @@ import Link from 'next/link';
 
 export default function NavBar() {
   return (
-    <nav className="fixed top-0 left-0 z-50 flex h-13 w-full items-center justify-between px-5">
+    <nav className="fixed top-0 left-0 z-50 flex h-13 w-full items-center justify-between px-8">
       {/* 로고 */}
       <Link href="/" className="text-xl font-bold">
         TwoLog
