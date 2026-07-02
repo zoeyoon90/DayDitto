@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import './globals.css';
-import NavBar from '@/components/NavBar/NavBar';
+
 
 export const metadata: Metadata = {
   title: 'TwoLog',
@@ -15,8 +15,7 @@ export default function RootLayout({
   return (
     <html lang="ko">
       <body>
-        <NavBar />
-          <main className="pt-13">{children}</main>
+          {children}
       </body>
     </html>
   );

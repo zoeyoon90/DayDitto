@@ -1,8 +1,8 @@
-@import "tailwindcss";
+@import 'tailwindcss';
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #a6c2ce;
+  --foreground: #2f3e46;
 }
 
 html,
@@ -14,4 +14,48 @@ body {
 body {
   color: var(--foreground);
   background: var(--background);
+}
+
+@theme {
+  /* TwoLog 팔레트 A — 평화와 평온 */
+  --color-background: #a6c2ce; /* 페이지 배경 */
+  --color-card: #f5f1e8; /* 카드/일기장 영역 */
+  --color-main: #5e8ca7; /* 버튼, 강조 요소 */
+  --color-accent: #d9a86c; /* CTA, 하이라이트 포인트 */
+  --color-foreground: #2f3e46; /* 기본 텍스트 */
+
+  /* 버튼(neobrutalism) 토큰 — 팔레트에 맞춰 연결 */
+  --color-mtext: #2f3e46;
+  --color-border: #2f3e46;
+  --color-bw: #f5f1e8;
+  --color-text: #2f3e46;
+  --radius-base: 5px;
+  --shadow-shadow: 4px 4px 0px 0px #2f3e46;
+  --spacing-boxShadowX: 4px;
+  --spacing-boxShadowY: 4px;
+  --spacing-reverseBoxShadowX: -4px;
+  --spacing-reverseBoxShadowY: -4px;
+
+  --animate-fade-in: fade-in 2s ease-in-out both;
+  --animate-fade-up: fade-up 0.6s ease-out both;
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
