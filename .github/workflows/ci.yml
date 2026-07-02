@@ -1,0 +1,60 @@
+# CI workflow 이름 (GitHub UI에서 보임)
+name: CI
+
+# 트리거: 언제 실행할지
+on:
+  pull_request:
+    branches:
+      - main          # main으로 PR 열거나 업데이트할때
+      - develop       # develop으로 PR열거나 업데이트 할때
+
+# 실행할 작업들
+jobs:
+  ci:
+    name: Lint, Type Check, Build, Test
+    runs-on: ubuntu-latest      #GitHub무료 Linux 서버에서 실행 ((월 2000분 무료))
+
+    steps:
+      # 1.코드 체크아웃 (서버에 내 repo코드 다운로드)
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # 2. Node.js 22 설치(현재 버전)
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      # 3. pnpm 설치 (현재버전)
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
+      # 4. pnpm캐시 설정 (node_modules 캐싱 -> 다음 실행 빠름)
+      - name: Get pnpm store directory
+        id: pnpm-cache
+        run: echo "STORE_PATH=$(pnpm store path --silent)" >> $GITHUB_OUTPUT
+
+      - name: Cache pnpm stroe
+        uses: actions/cache@v4
+        with:
+          path: ${{ steps.pnpm-cache.outputs.STORE_PATH}}
+          key: ${{ runner.os}}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }} #lockfile 바뀌면 캐시 갱신  
+          restore-keys: |
+            ${{ runner.os}}-pnpm-store-
+
+      # 5. 의존성 설치 / lockfile과 다르면 설치 실패 (CI 안전장치) 
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      # 6. 검사 실행
+      - name: Lint
+        run: pnpm lint
+
+      - name: Type Check
+        run: pnpm check-types
+
+      - name: Build
+        run: pnpm build
+
+      - name: Test (api)
+        run: pnpm --filter api test
