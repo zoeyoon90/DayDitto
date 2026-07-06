@@ -1,20 +1,16 @@
 'use client'
 
+import { createClient } from '@/lib/supabase/client'
+
 const SOCIAL_PROVIDERS = [
   {
-    provider: 'kakao',
+    provider: 'kakao' as const,
     label: '카카오로 로그인',
     bg: 'bg-[#FEE500]',
     text: 'text-[#191919]',
   },
   {
-    provider: 'naver',
-    label: '네이버로 로그인',
-    bg: 'bg-[#03C75A]',
-    text: 'text-white',
-  },
-  {
-    provider: 'google',
+    provider: 'google' as const,
     label: '구글로 로그인',
     bg: 'bg-white',
     text: 'text-[#191919]',
@@ -22,8 +18,14 @@ const SOCIAL_PROVIDERS = [
 ] as const
 
 export default function SocialLogin() {
-  const handleSocialLogin = (provider: string) => {
-    window.location.href = `/api/auth/${provider}`
+  const handleSocialLogin = async (provider: 'kakao' | 'google') => {
+    const supabase = createClient()
+    await supabase.auth.signInWithOAuth({
+      provider,
+      options: {
+        redirectTo: `${window.location.origin}/auth/callback`,
+      },
+    })
   }
 
   return (
