@@ -1,159 +1,120 @@
-# Turborepo starter
+# TwoLog
 
-This Turborepo starter is maintained by the Turborepo core team.
+> 나의 하루를, 나의 언어로 다시 쓰다
 
-## Using this example
+일기 기반 AI 번역·발음 영어 학습 서비스
 
-Run the following command:
+---
 
-```sh
-npx create-turbo@latest
+## 서비스 소개
+
+단어장 예문이 아닌, **오늘 내가 직접 겪은 하루**를 영어로 표현하는 경험을 통해 자연스럽게 영어 감각을 기르는 개인 학습 다이어리입니다.
+
+"오늘 점심에 김치찌개를 먹었는데 너무 매웠다"처럼 내 이야기를 한국어로 작성하면, AI가 자연스러운 영어 문장으로 번역하고 원어민 발음으로 들려줍니다.
+
+**핵심 흐름:** 일기 작성 → AI 양방향 번역 → TTS 발음 청취 → 캘린더 누적
+
+---
+
+## 핵심 기능
+
+| 기능 | 설명 | 상태 |
+|------|------|------|
+| 일기 작성 | 사진/GIF 1장 + 텍스트 (한 줄 = 한 문장) | MVP |
+| AI 양방향 번역 | 한→영 / 영→한, 버튼 1회로 전체 줄 일괄 번역, 원문 바로 아래 대조 표시 | MVP |
+| TTS 발음 재생 | 번역 문장 원어민 음성 재생 | MVP |
+| 히스토리/캘린더 | 날짜별 일기 목록 및 썸네일 뷰 | Phase 2 |
+| 표현 즐겨찾기 | 마음에 든 번역 표현 저장·복습 | Phase 2 |
+| 번역 톤 선택 | 격식체·구어체 등 스타일 선택 옵션 | Phase 2 |
+| 발음 녹음 비교 | 내 발음과 원어민 발음 비교 | Phase 3 |
+
+---
+
+## 기술 스택
+
+### Frontend — `apps/web`
+
+| 항목 | 기술 |
+|------|------|
+| 프레임워크 | Next.js 16.2 (App Router), React 19 |
+| 언어 | TypeScript 5.9 |
+| 스타일링 | Tailwind CSS v4, Radix UI |
+| 폼 관리 | React Hook Form + Zod |
+| 인증 | Supabase SSR Auth |
+
+### Backend — `apps/api`
+
+| 항목 | 기술 |
+|------|------|
+| 프레임워크 | NestJS 11 |
+| 언어 | TypeScript 5.7 |
+| ORM | Drizzle ORM |
+| 데이터베이스 | PostgreSQL (Supabase 관리형) |
+| 인증 | JWT (Supabase JWKS, RS256) |
+
+### Infra & Services
+
+| 항목 | 기술 | 비고 |
+|------|------|------|
+| DB / Auth / Storage | Supabase | PostgreSQL + Auth + Storage 통합 |
+| 번역 엔진 | Claude Haiku 4.5 (LLM API) | 계획 — 의역 중심 프롬프트 설계 |
+| TTS | Google Cloud TTS / Amazon Polly / OpenAI TTS | 계획 |
+| API 배포 | Railway / Render | 계획 |
+| CI | GitHub Actions | lint, type-check, build, test |
+
+### Monorepo
+
+- **Turborepo** + **pnpm** workspaces
+- `packages/ui` — 공유 컴포넌트
+- `packages/eslint-config` — ESLint 공통 설정
+- `packages/typescript-config` — tsconfig 공통 설정
+
+---
+
+## 프로젝트 구조
+
+```
+TwoLog/
+├── apps/
+│   ├── web/          # Next.js 프론트엔드 (port 5006)
+│   └── api/          # NestJS 백엔드 (port 3000)
+├── packages/
+│   ├── ui/           # 공유 React 컴포넌트
+│   ├── eslint-config/
+│   └── typescript-config/
 ```
 
-## What's inside?
+---
 
-This Turborepo includes the following packages/apps:
+## 로컬 실행
 
-### Apps and Packages
+```bash
+# 의존성 설치
+pnpm install
 
-- `docs`: a [Next.js](https://nextjs.org/) app
-- `web`: another [Next.js](https://nextjs.org/) app
-- `@repo/ui`: a stub React component library shared by both `web` and `docs` applications
-- `@repo/eslint-config`: `eslint` configurations (includes `eslint-config-next` and `eslint-config-prettier`)
-- `@repo/typescript-config`: `tsconfig.json`s used throughout the monorepo
-
-Each package/app is 100% [TypeScript](https://www.typescriptlang.org/).
-
-### Utilities
-
-This Turborepo has some additional tools already setup for you:
-
-- [TypeScript](https://www.typescriptlang.org/) for static type checking
-- [ESLint](https://eslint.org/) for code linting
-- [Prettier](https://prettier.io) for code formatting
-
-### Build
-
-To build all apps and packages, run the following command:
-
-With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed (recommended):
-
-```sh
-cd my-turborepo
-turbo build
+# 개발 서버 실행 (web + api 동시)
+pnpm dev
 ```
 
-Without global `turbo`, use your package manager:
+- Web: `http://localhost:5006`
+- API: `http://localhost:3000`
 
-```sh
-cd my-turborepo
-npx turbo build
-pnpm dlx turbo build
-pnpm exec turbo build
-```
+환경 변수 설정:
+- `apps/web/.env.local` — Supabase URL, Anon Key
+- `apps/api/.env` — Supabase URL, Service Role Key, DB 연결 정보
 
-You can build a specific package by using a [filter](https://turborepo.dev/docs/crafting-your-repository/running-tasks#using-filters):
+---
 
-With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed:
+## 로드맵
 
-```sh
-turbo build --filter=docs
-```
+| Phase | 범위 |
+|-------|------|
+| Phase 1 · MVP | 일기 작성(텍스트+사진/GIF), AI 양방향 번역, TTS 발음 재생 |
+| Phase 2 | 히스토리/캘린더 뷰, 표현 즐겨찾기, 번역 톤 선택 |
+| Phase 3 | 발음 녹음 비교, 모바일 앱(React Native/Expo), 소셜 공유 |
 
-Without global `turbo`:
+---
 
-```sh
-npx turbo build --filter=docs
-pnpm exec turbo build --filter=docs
-pnpm exec turbo build --filter=docs
-```
+## 작성자
 
-### Develop
-
-To develop all apps and packages, run the following command:
-
-With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed (recommended):
-
-```sh
-cd my-turborepo
-turbo dev
-```
-
-Without global `turbo`, use your package manager:
-
-```sh
-cd my-turborepo
-npx turbo dev
-pnpm exec turbo dev
-pnpm exec turbo dev
-```
-
-You can develop a specific package by using a [filter](https://turborepo.dev/docs/crafting-your-repository/running-tasks#using-filters):
-
-With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed:
-
-```sh
-turbo dev --filter=web
-```
-
-Without global `turbo`:
-
-```sh
-npx turbo dev --filter=web
-pnpm exec turbo dev --filter=web
-pnpm exec turbo dev --filter=web
-```
-
-### Remote Caching
-
-> [!TIP]
-> Vercel Remote Cache is free for all plans. Get started today at [vercel.com](https://vercel.com/signup?utm_source=remote-cache-sdk&utm_campaign=free_remote_cache).
-
-Turborepo can use a technique known as [Remote Caching](https://turborepo.dev/docs/core-concepts/remote-caching) to share cache artifacts across machines, enabling you to share build caches with your team and CI/CD pipelines.
-
-By default, Turborepo will cache locally. To enable Remote Caching you will need an account with Vercel. If you don't have an account you can [create one](https://vercel.com/signup?utm_source=turborepo-examples), then enter the following commands:
-
-With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed (recommended):
-
-```sh
-cd my-turborepo
-turbo login
-```
-
-Without global `turbo`, use your package manager:
-
-```sh
-cd my-turborepo
-npx turbo login
-pnpm exec turbo login
-pnpm exec turbo login
-```
-
-This will authenticate the Turborepo CLI with your [Vercel account](https://vercel.com/docs/concepts/personal-accounts/overview).
-
-Next, you can link your Turborepo to your Remote Cache by running the following command from the root of your Turborepo:
-
-With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed:
-
-```sh
-turbo link
-```
-
-Without global `turbo`:
-
-```sh
-npx turbo link
-pnpm exec turbo link
-pnpm exec turbo link
-```
-
-## Useful Links
-
-Learn more about the power of Turborepo:
-
-- [Tasks](https://turborepo.dev/docs/crafting-your-repository/running-tasks)
-- [Caching](https://turborepo.dev/docs/crafting-your-repository/caching)
-- [Remote Caching](https://turborepo.dev/docs/core-concepts/remote-caching)
-- [Filtering](https://turborepo.dev/docs/crafting-your-repository/running-tasks#using-filters)
-- [Configuration Options](https://turborepo.dev/docs/reference/configuration)
-- [CLI Usage](https://turborepo.dev/docs/reference/command-line-reference)
+윤숙희 (Zoe) · Product Owner / Developer
