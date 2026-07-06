@@ -20,12 +20,12 @@ export default function SignupForm() {
   })
 
   const onSubmit = async ({ passwordConfirm: _, ...data }: SignupFormData) => {
-    try {
-      await signup(data)
-      router.push('/login')
-    } catch {
-      setError('root', { message: '회원가입에 실패했습니다. 다시 시도해주세요.' })
+    const { error } = await signup(data)
+    if (error) {
+      setError('root', { message: error })
+      return
     }
+    router.push('/login')
   }
 
   return (

@@ -20,12 +20,12 @@
     })
 
     const onSubmit = async (data: LoginFormData) => {
-      try {
-        await login(data)
-        router.push('/')
-      } catch {
+      const { error } = await login(data)
+      if (error) {
         setError('root', { message: '이메일 또는 비밀번호가 올바르지 않습니다' })
+        return
       }
+      router.push('/calender')
     }
 
     return (

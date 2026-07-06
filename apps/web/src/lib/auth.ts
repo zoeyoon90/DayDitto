@@ -3,16 +3,16 @@
 import { createClient } from './supabase/server'
 import type { LoginFormData, SignupFormData } from '@/types/auth'
 
-export async function login(data: LoginFormData): Promise<void> {
+export async function login(data: LoginFormData): Promise<{ error: string | null }> {
   const supabase = await createClient()
   const { error } = await supabase.auth.signInWithPassword({
     email: data.email,
     password: data.password,
   })
-  if (error) throw error
+  return { error: error?.message ?? null }
 }
 
-export async function signup(data: Omit<SignupFormData, 'passwordConfirm'>): Promise<void> {
+export async function signup(data: Omit<SignupFormData, 'passwordConfirm'>): Promise<{ error: string | null }> {
   const supabase = await createClient()
   const { error } = await supabase.auth.signUp({
     email: data.email,
@@ -21,7 +21,7 @@ export async function signup(data: Omit<SignupFormData, 'passwordConfirm'>): Pro
       data: { nickname: data.nickname },
     },
   })
-  if (error) throw error
+  return { error: error?.message ?? null }
 }
 
 export async function signOut(): Promise<void> {
