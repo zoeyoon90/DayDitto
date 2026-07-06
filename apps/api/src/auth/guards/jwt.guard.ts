@@ -9,6 +9,11 @@ import { Request } from 'express';
 import jwksClient from 'jwks-rsa';
 import * as jwt from 'jsonwebtoken';
 
+interface SupabaseJwtPayload extends jwt.JwtPayload {
+  email: string;
+  user_metadata?: { nickname?: string };
+}
+
 @Injectable()
 export class JwtGuard implements CanActivate {
   private readonly jwksClient: jwksClient.JwksClient;
@@ -32,18 +37,20 @@ export class JwtGuard implements CanActivate {
       const decoded = jwt.decode(token, { complete: true });
       if (!decoded || typeof decoded === 'string') throw new Error();
 
-      const signingKey = await this.jwksClient.getSigningKey(decoded.header.kid);
+      const signingKey = await this.jwksClient.getSigningKey(
+        decoded.header.kid,
+      );
       const publicKey = signingKey.getPublicKey();
 
       const payload = jwt.verify(token, publicKey, {
         algorithms: ['RS256'],
         audience: 'authenticated',
-      }) as jwt.JwtPayload;
+      }) as SupabaseJwtPayload;
 
       (request as Request & { user: unknown }).user = {
         id: payload.sub,
-        email: payload['email'],
-        nickname: payload['user_metadata']?.nickname,
+        email: payload.email,
+        nickname: payload.user_metadata?.nickname,
       };
 
       return true;
@@ -54,6 +61,6 @@ export class JwtGuard implements CanActivate {
 
   private extractToken(request: Request): string | null {
     const [type, token] = request.headers.authorization?.split(' ') ?? [];
-    return type === 'Bearer' ? token ?? null : null;
+    return type === 'Bearer' ? (token ?? null) : null;
   }
 }
