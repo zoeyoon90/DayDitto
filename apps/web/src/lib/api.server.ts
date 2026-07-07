@@ -12,6 +12,9 @@ export async function apiFetchWithAuth<T>(
     data: { session },
   } = await supabase.auth.getSession()
 
+  console.log('BASE_URL:', BASE_URL)
+  console.log('full URL:', `${BASE_URL}${path}`)
+  
   const res = await fetch(`${BASE_URL}${path}`, {
     ...init,
     headers: {
