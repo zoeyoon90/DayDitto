@@ -10,7 +10,11 @@ import {
 import { users } from './users';
 import { dailyLogs } from './dailyLogs';
 
-export const callTypeEnum = pgEnum('call_type', ['translation', 'tts', 'feedback']);
+export const callTypeEnum = pgEnum('call_type', [
+  'translation',
+  'tts',
+  'feedback',
+]);
 
 export const aiUsageLogs = pgTable(
   'ai_usage_logs',
@@ -26,7 +30,9 @@ export const aiUsageLogs = pgTable(
     callType: callTypeEnum('call_type').notNull(),
     model: text('model').notNull(), // e.g. 'claude-haiku-4-5'
     tokensUsed: integer('tokens_used'), // 유료화 대비, 현재 nullable
-    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+    createdAt: timestamp('created_at', { withTimezone: true })
+      .notNull()
+      .defaultNow(),
   },
   (t) => [
     // MAU/기간별 쿼리: WHERE user_id = ? AND created_at >= ?

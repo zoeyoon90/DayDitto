@@ -16,9 +16,9 @@ export const favoriteExpressions = pgTable(
     koreanText: text('korean_text').notNull(), // 원문 한국어 표현
     englishText: text('english_text').notNull(), // 번역된 영어 표현
     memo: text('memo'), // 유저 메모 (nullable)
-    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+    createdAt: timestamp('created_at', { withTimezone: true })
+      .notNull()
+      .defaultNow(),
   },
-  (t) => [
-    index('fav_expr_user_id_idx').on(t.userId),
-  ],
+  (t) => [index('fav_expr_user_id_idx').on(t.userId)],
 );

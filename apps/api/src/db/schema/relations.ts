@@ -19,16 +19,19 @@ export const dailyLogsRelations = relations(dailyLogs, ({ one, many }) => ({
   favoriteExpressions: many(favoriteExpressions),
 }));
 
-export const favoriteExpressionsRelations = relations(favoriteExpressions, ({ one }) => ({
-  user: one(users, {
-    fields: [favoriteExpressions.userId],
-    references: [users.id],
+export const favoriteExpressionsRelations = relations(
+  favoriteExpressions,
+  ({ one }) => ({
+    user: one(users, {
+      fields: [favoriteExpressions.userId],
+      references: [users.id],
+    }),
+    dailyLog: one(dailyLogs, {
+      fields: [favoriteExpressions.dailyLogId],
+      references: [dailyLogs.id],
+    }),
   }),
-  dailyLog: one(dailyLogs, {
-    fields: [favoriteExpressions.dailyLogId],
-    references: [dailyLogs.id],
-  }),
-}));
+);
 
 export const aiUsageLogsRelations = relations(aiUsageLogs, ({ one }) => ({
   user: one(users, {

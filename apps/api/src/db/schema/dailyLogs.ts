@@ -1,4 +1,12 @@
-import { pgTable, uuid, text, timestamp, date, unique, pgEnum } from 'drizzle-orm/pg-core';
+import {
+  pgTable,
+  uuid,
+  text,
+  timestamp,
+  date,
+  unique,
+  pgEnum,
+} from 'drizzle-orm/pg-core';
 import { users } from './users';
 
 export const toneEnum = pgEnum('tone', ['formal', 'casual', 'friendly']);

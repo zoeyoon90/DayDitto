@@ -19,7 +19,9 @@ export const users = pgTable(
   'users',
   {
     // auth.users.id FK — auth에서 hard delete 시 cascade
-    id: uuid('id').primaryKey().references(() => authUsers.id, { onDelete: 'cascade' }),
+    id: uuid('id')
+      .primaryKey()
+      .references(() => authUsers.id, { onDelete: 'cascade' }),
     email: text('email'), // nullable, 소셜 로그인 시 미제공 가능
     nickname: text('nickname'), // 2~8자 검증은 앱 레벨
     provider: providerEnum('provider').notNull(),
