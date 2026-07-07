@@ -1,27 +1,35 @@
-import Image from 'next/image'
-import Link from 'next/link'
-import { MonthlyLog } from '@/types/calendar'
-import { formatDateKey } from '@/lib/calendar'
-import { cn } from '@/lib/utils'
+import Image from 'next/image';
+import Link from 'next/link';
+import { MonthlyLog } from '@/types/calendar';
+import { formatDateKey } from '@/lib/calendar';
+import { cn } from '@/lib/utils';
 
 interface CalenderCellProps {
-  date: Date | null
-  log: MonthlyLog | null
-  isToday: boolean
+  date: Date | null;
+  log: MonthlyLog | null;
+  isToday: boolean;
+  isSunday: boolean;
+  isSaturday: boolean;
 }
 
-export default function CalenderCell({ date, log, isToday }: CalenderCellProps) {
+export default function CalenderCell({
+  date,
+  log,
+  isToday,
+  isSunday,
+  isSaturday,
+}: CalenderCellProps) {
   if (!date) {
-    return <div className="aspect-square" />
+    return <div className="aspect-square" />;
   }
 
-  const day = date.getDate()
-  const dateKey = formatDateKey(date)
+  const day = date.getDate();
+  const dateKey = formatDateKey(date);
 
   const cellClass = cn(
     'relative aspect-square rounded-base border-2 border-border overflow-hidden flex flex-col',
     isToday && 'ring-2 ring-accent ring-offset-1',
-  )
+  );
 
   const content = (
     <>
@@ -39,6 +47,8 @@ export default function CalenderCell({ date, log, isToday }: CalenderCellProps) 
           'relative z-10 text-xs font-bold leading-none p-1',
           log?.imageUrl ? 'text-bw drop-shadow-sm' : 'text-foreground',
           isToday && !log?.imageUrl && 'text-main',
+          isSunday && 'text-red-500',
+          isSaturday && 'text-blue-500',
         )}
       >
         {day}
@@ -47,15 +57,15 @@ export default function CalenderCell({ date, log, isToday }: CalenderCellProps) 
         <span className="absolute bottom-1 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-main" />
       )}
     </>
-  )
+  );
 
   if (log) {
     return (
       <Link href={`/detailLog?id=${log.id}`} className={cellClass}>
         {content}
       </Link>
-    )
+    );
   }
 
-  return <div className={cellClass}>{content}</div>
+  return <div className={cellClass}>{content}</div>;
 }
