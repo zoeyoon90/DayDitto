@@ -31,7 +31,9 @@ export class DailyLogsController {
     const month = parseInt(monthStr, 10);
 
     if (!year || isNaN(year) || isNaN(month) || month < 1 || month > 12) {
-      throw new BadRequestException('year and month(1-12) query params required');
+      throw new BadRequestException(
+        'year and month(1-12) query params required',
+      );
     }
 
     return this.dailyLogsService.getMonthlyLogs(req.user.id, year, month);
