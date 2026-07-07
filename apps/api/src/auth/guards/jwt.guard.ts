@@ -43,7 +43,7 @@ export class JwtGuard implements CanActivate {
       const publicKey = signingKey.getPublicKey();
 
       const payload = jwt.verify(token, publicKey, {
-        algorithms: ['RS256'],
+        algorithms: ['ES256'],
         audience: 'authenticated',
       }) as SupabaseJwtPayload;
 
