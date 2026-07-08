@@ -4,6 +4,7 @@ import {
   Controller,
   Get,
   Param,
+  Patch,
   Post,
   Query,
   Req,
@@ -48,6 +49,16 @@ export class DailyLogsController {
   @UseGuards(JwtGuard)
   getLog(@Req() req: Request & { user: AuthUser }, @Param('id') id: string) {
     return this.dailyLogsService.getLogById(req.user.id, id);
+  }
+
+  @Patch(':id/audio')
+  @UseGuards(JwtGuard)
+  updateAudio(
+    @Req() req: Request & { user: AuthUser },
+    @Param('id') id: string,
+    @Body() body: { audioUrl: string },
+  ) {
+    return this.dailyLogsService.updateAudioUrl(req.user.id, id, body.audioUrl);
   }
 
   @Post()

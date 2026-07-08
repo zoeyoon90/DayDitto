@@ -98,6 +98,13 @@ export class DailyLogsService {
     return created;
   }
 
+  async updateAudioUrl(userId: string, id: string, audioUrl: string) {
+    await db
+      .update(dailyLogs)
+      .set({ audioUrl, updatedAt: new Date() })
+      .where(and(eq(dailyLogs.id, id), eq(dailyLogs.userId, userId)));
+  }
+
   async getLogById(userId: string, id: string) {
     const [log] = await db
       .select()

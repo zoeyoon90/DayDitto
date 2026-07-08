@@ -1,4 +1,5 @@
 import { DailyLogDetail } from '@/types/calendar'
+import AudioPlayer from './components/AudioPlayer'
 import DetailNavBar from './components/DetailNavBar'
 import DetailNoteBook from './components/DetailNoteBook'
 
@@ -16,6 +17,11 @@ export default function DetailLogContainer({ log }: Props) {
         weather={log.weather}
         mood={log.mood}
         imageUrl={log.imageUrl}
+      />
+      <AudioPlayer
+        logId={log.id}
+        initialAudioUrl={log.audioUrl}
+        englishContent={log.englishContent}
       />
       <DetailNoteBook
         koreanContent={log.koreanContent}

@@ -19,4 +19,5 @@ export interface DailyLogDetail {
   weather: string | null
   koreanContent: string
   englishContent: string | null
+  audioUrl: string | null
 }
