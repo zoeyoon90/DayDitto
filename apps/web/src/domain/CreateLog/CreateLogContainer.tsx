@@ -103,7 +103,10 @@ export default function CreateLogContainer() {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ logDate, koreanContent, englishContent, imageUrl }),
     });
-    if (res.ok) router.push('/calender');
+    if (res.ok) {
+      const { id } = await res.json() as { id: string };
+      router.push(`/detailLog?id=${id}`);
+    }
   };
 
   return (
