@@ -74,6 +74,8 @@ export class DailyLogsService {
           koreanContent: dto.koreanContent,
           englishContent: dto.englishContent ?? null,
           imageUrl: dto.imageUrl ?? null,
+          mood: dto.mood ?? null,
+          weather: dto.weather ?? null,
           updatedAt: new Date(),
         })
         .where(eq(dailyLogs.id, existing.id))
@@ -89,6 +91,8 @@ export class DailyLogsService {
         koreanContent: dto.koreanContent,
         englishContent: dto.englishContent ?? null,
         imageUrl: dto.imageUrl ?? null,
+        mood: dto.mood ?? null,
+        weather: dto.weather ?? null,
       })
       .returning({ id: dailyLogs.id });
     return created;

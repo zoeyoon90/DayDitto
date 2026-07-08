@@ -22,6 +22,8 @@ export const dailyLogs = pgTable(
     // 유저 timezone 기준 날짜 (서버에서 users.timezone 조회 후 결정)
     logDate: date('log_date').notNull(),
     imageUrl: text('image_url'), // 사진/GIF 첨부 (MVP)
+    mood: text('mood'), // 기분 이모지
+    weather: text('weather'), // 날씨 이모지
     tone: toneEnum('tone'), // 번역 말투 (Phase 2, nullable)
     koreanContent: text('korean_content').notNull(), // 원문 한국어
     englishContent: text('english_content'), // AI 번역 결과
