@@ -1,16 +1,18 @@
 'use client';
 
-import { useRef } from 'react';
+import { useRef, useState } from 'react';
+import GifPicker from './GifPicker';
 
 type ImageUploadProps = {
-  image: File | null;
-  onImageChange: (file: File | null) => void;
+  image: File | string | null;
+  onImageChange: (media: File | string | null) => void;
   compact?: boolean;
 };
 
 export default function ImageUpload({ image, onImageChange, compact }: ImageUploadProps) {
   const inputRef = useRef<HTMLInputElement>(null);
-  const gifInputRef = useRef<HTMLInputElement>(null);
+  const gifButtonRef = useRef<HTMLButtonElement>(null);
+  const [gifAnchor, setGifAnchor] = useState<DOMRect | null>(null);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0] ?? null;
@@ -22,16 +24,24 @@ export default function ImageUpload({ image, onImageChange, compact }: ImageUplo
     if (inputRef.current) inputRef.current.value = '';
   };
 
+  const previewSrc = image instanceof File ? URL.createObjectURL(image) : (image ?? '');
+
   if (compact) {
     return (
-      <div className="shrink-0">
+      <div className="shrink-0 relative">
         {image ? (
           <div className="relative w-8 h-8 border border-border rounded-base overflow-hidden">
             <img
-              src={URL.createObjectURL(image)}
+              src={previewSrc}
               alt="업로드된 이미지"
               className="w-full h-full object-cover cursor-pointer"
-              onClick={() => inputRef.current?.click()}
+              onClick={(e) => {
+                if (typeof image === 'string') {
+                  setGifAnchor((e.currentTarget as HTMLElement).getBoundingClientRect());
+                } else {
+                  inputRef.current?.click();
+                }
+              }}
             />
             <button
               onClick={handleRemove}
@@ -50,15 +60,22 @@ export default function ImageUpload({ image, onImageChange, compact }: ImageUplo
               이미지 업로드
             </button>
             <button
-              onClick={() => gifInputRef.current?.click()}
+              ref={gifButtonRef}
+              onClick={() => setGifAnchor(gifButtonRef.current?.getBoundingClientRect() ?? null)}
               className="px-3 h-7 border-2 border-border bg-card rounded-base text-xs font-base text-foreground/80 shadow-shadow hover:translate-x-boxShadowX hover:translate-y-boxShadowY hover:shadow-none transition-all whitespace-nowrap"
             >
               GIF
             </button>
           </div>
         )}
+        {gifAnchor && (
+          <GifPicker
+            anchorRect={gifAnchor}
+            onSelect={(url) => onImageChange(url)}
+            onClose={() => setGifAnchor(null)}
+          />
+        )}
         <input ref={inputRef} type="file" accept="image/png,image/jpeg,image/webp" onChange={handleFileChange} className="hidden" />
-        <input ref={gifInputRef} type="file" accept="image/gif" onChange={handleFileChange} className="hidden" />
       </div>
     );
   }
@@ -68,7 +85,7 @@ export default function ImageUpload({ image, onImageChange, compact }: ImageUplo
       {image ? (
         <div className="relative w-full aspect-square border-2 border-border shadow-shadow overflow-hidden rounded-base">
           <img
-            src={URL.createObjectURL(image)}
+            src={previewSrc}
             alt="업로드된 이미지"
             className="w-full h-full object-cover"
           />

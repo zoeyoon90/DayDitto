@@ -24,7 +24,7 @@ const formatDate = (date: Date) =>
 
 export default function CreateLogContainer() {
   const [lines, setLines] = useState<DiaryLineData[]>([createLine()]);
-  const [image, setImage] = useState<File | null>(null);
+  const [image, setImage] = useState<File | string | null>(null);
   const [isTranslating, setIsTranslating] = useState(false);
   const [mood, setMood] = useState<string | null>(null);
   const [weather, setWeather] = useState<string | null>(null);
