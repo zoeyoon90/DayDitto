@@ -1,4 +1,4 @@
-import Image from 'next/image'
+import ImagePreview from './ImagePreview'
 
 function formatDate(dateStr: string) {
   return new Date(dateStr).toLocaleDateString('ko-KR', {
@@ -38,9 +38,7 @@ export default function DetailNavBar({ logDate, weather, mood, imageUrl }: Props
       {imageUrl && (
         <>
           <div className="w-px h-4 bg-border shrink-0" />
-          <div className="relative w-8 h-8 border border-border rounded-base overflow-hidden shrink-0">
-            <Image src={imageUrl} alt="일기 이미지" fill unoptimized className="object-cover" />
-          </div>
+          <ImagePreview src={imageUrl} />
         </>
       )}
     </div>

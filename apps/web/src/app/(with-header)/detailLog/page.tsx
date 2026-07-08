@@ -8,13 +8,13 @@ interface Props {
 
 export default async function DetailLogPage({ searchParams }: Props) {
   const { id } = await searchParams
-  if (!id) return <main className="pt-24 text-center text-foreground/40">일기를 찾을 수 없습니다.</main>
+  if (!id) return <main className="pt-15 text-center text-foreground/40">일기를 찾을 수 없습니다.</main>
 
   const log = await apiFetchWithAuth<DailyLogDetail>(`/daily-logs/${id}`)
 
   return (
-    <main className="flex min-h-screen flex-col items-center pt-24 px-4">
+    <div className="flex flex-col items-center px-4">
       <DetailLogContainer log={log} />
-    </main>
+    </div>
   )
 }
