@@ -126,16 +126,33 @@ export default function CreateLogContainer() {
   return (
     <div className="max-w-201.5 mx-auto px-2 py-4 sm:px-4 sm:py-6 flex flex-col gap-6">
       {/* 날짜/날씨/기분/이미지 navbar */}
-      <div className="flex items-center gap-2 px-1 py-2 border-b border-border/10 overflow-x-auto">
-        <DayMeta
-          date={formatDate(new Date())}
-          mood={mood}
-          weather={weather}
-          onMoodChange={setMood}
-          onWeatherChange={setWeather}
-        />
-        <div className="w-px h-4 bg-border shrink-0" />
-        <ImageUpload compact image={image} onImageChange={setImage} />
+      <div className="flex flex-col gap-2 px-1 py-2 border-b border-border/10 sm:flex-row sm:items-center sm:gap-2">
+        {/* row1: 날짜(좌) + 이미지(우, 모바일만) / sm+: contents로 투명화 */}
+        <div className="flex items-center gap-2 sm:contents">
+          <div className="border border-border rounded-base px-2 h-7 flex items-center flex-1 sm:flex-none sm:shrink-0">
+            <p className="text-sm text-foreground/90 whitespace-nowrap">{formatDate(new Date())}</p>
+          </div>
+          <div className="hidden sm:block w-px h-4 bg-border shrink-0" />
+          <div className="sm:hidden shrink-0">
+            <ImageUpload compact image={image} onImageChange={setImage} />
+          </div>
+        </div>
+
+        {/* row2: DayMeta 중앙정렬 (모바일) / sm+: contents로 투명화 */}
+        <div className="flex justify-center sm:contents">
+          <DayMeta
+            mood={mood}
+            weather={weather}
+            onMoodChange={setMood}
+            onWeatherChange={setWeather}
+          />
+        </div>
+
+        {/* sm+ 전용 구분선 + 이미지 */}
+        <div className="hidden sm:block w-px h-4 bg-border shrink-0" />
+        <div className="hidden sm:block shrink-0">
+          <ImageUpload compact image={image} onImageChange={setImage} />
+        </div>
       </div>
 
       {/* 일기 카드 */}
