@@ -25,7 +25,7 @@ export default function CalenderContainer({ data, year, month }: CalenderContain
   }
 
   return (
-    <div className="bg-main/15 border-2 border-border shadow-shadow rounded-base p-4 max-w-lg w-full mx-auto">
+    <div className="bg-main/15 border-2 border-border shadow-shadow rounded-base p-4 max-w-153.5 w-full mx-auto">
       <CalenderHeader
         year={year}
         month={month}
