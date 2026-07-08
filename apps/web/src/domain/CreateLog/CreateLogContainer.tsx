@@ -32,6 +32,7 @@ export default function CreateLogContainer() {
   const [mood, setMood] = useState<string | null>(null);
   const [weather, setWeather] = useState<string | null>(null);
   const [focusLineId, setFocusLineId] = useState<string | null>(null);
+  const [isSaving, setIsSaving] = useState(false);
 
   const addLineAfter = (id: string) => {
     const newLine = createLine();
@@ -78,34 +79,47 @@ export default function CreateLogContainer() {
     const koreanContent = lines.map((l) => l.korean).filter(Boolean).join('\n');
     if (!koreanContent.trim()) return;
 
-    let imageUrl: string | null = null;
+    setIsSaving(true);
+    try {
+      let imageUrl: string | null = null;
 
-    if (image instanceof File) {
-      const supabase = createClient();
-      const ext = image.name.split('.').pop();
-      const path = `${crypto.randomUUID()}.${ext}`;
-      const { data, error } = await supabase.storage
-        .from('diary-images')
-        .upload(path, image);
-      if (!error && data) {
-        const { data: urlData } = supabase.storage.from('diary-images').getPublicUrl(data.path);
-        imageUrl = urlData.publicUrl;
+      if (image instanceof File) {
+        const supabase = createClient();
+        const ext = image.name.split('.').pop();
+        const path = `${crypto.randomUUID()}.${ext}`;
+        const { data, error } = await supabase.storage
+          .from('diary-images')
+          .upload(path, image);
+        if (!error && data) {
+          const { data: urlData } = supabase.storage.from('diary-images').getPublicUrl(data.path);
+          imageUrl = urlData.publicUrl;
+        }
+      } else if (typeof image === 'string') {
+        imageUrl = image;
       }
-    } else if (typeof image === 'string') {
-      imageUrl = image;
-    }
 
-    const englishContent = lines.map((l) => l.english).filter(Boolean).join('\n') || undefined;
-    const logDate = new Date().toISOString().split('T')[0];
+      const englishContent = lines.map((l) => l.english).filter(Boolean).join('\n') || undefined;
+      const logDate = new Date().toISOString().split('T')[0];
 
-    const res = await fetch('/api/logs', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ logDate, koreanContent, englishContent, imageUrl, mood: mood ?? undefined, weather: weather ?? undefined }),
-    });
-    if (res.ok) {
-      const { id } = await res.json() as { id: string };
-      router.push(`/detailLog?id=${id}`);
+      const res = await fetch('/api/logs', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ logDate, koreanContent, englishContent, imageUrl, mood: mood ?? undefined, weather: weather ?? undefined }),
+      });
+      if (res.ok) {
+        const { id } = await res.json() as { id: string };
+        const englishLines = lines.map((l) => l.english).filter(Boolean);
+        if (englishLines.length > 0) {
+          await fetch('/api/tts-batch', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ logId: id, lines: englishLines }),
+          });
+        }
+        router.push(`/detailLog?id=${id}`);
+      }
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -162,6 +176,7 @@ export default function CreateLogContainer() {
       {/* 액션 버튼 */}
       <DiaryActionBar
         isTranslating={isTranslating}
+        isSaving={isSaving}
         onTranslate={handleTranslate}
         onSave={handleSave}
       />

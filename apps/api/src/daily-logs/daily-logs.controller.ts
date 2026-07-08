@@ -61,6 +61,16 @@ export class DailyLogsController {
     return this.dailyLogsService.updateAudioUrl(req.user.id, id, body.audioUrl);
   }
 
+  @Patch(':id/line-audio')
+  @UseGuards(JwtGuard)
+  updateLineAudio(
+    @Req() req: Request & { user: AuthUser },
+    @Param('id') id: string,
+    @Body() body: { lineAudioUrls: string[] },
+  ) {
+    return this.dailyLogsService.updateLineAudioUrls(req.user.id, id, body.lineAudioUrls);
+  }
+
   @Post()
   @UseGuards(JwtGuard)
   createLog(

@@ -20,4 +20,5 @@ export interface DailyLogDetail {
   koreanContent: string
   englishContent: string | null
   audioUrl: string | null
+  lineAudioUrls: string[] | null
 }
