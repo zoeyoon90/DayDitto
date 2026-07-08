@@ -1,7 +1,9 @@
 import {
   BadRequestException,
+  Body,
   Controller,
   Get,
+  Post,
   Query,
   Req,
   UseGuards,
@@ -9,11 +11,13 @@ import {
 import { Request } from 'express';
 import { JwtGuard } from '../auth/guards/jwt.guard';
 import { DailyLogsService } from './daily-logs.service';
+import { CreateLogDto } from './dto/create-log.dto';
 
 interface AuthUser {
   id: string;
   email: string;
   nickname?: string;
+  provider: string;
 }
 
 @Controller('daily-logs')
@@ -37,5 +41,14 @@ export class DailyLogsController {
     }
 
     return this.dailyLogsService.getMonthlyLogs(req.user.id, year, month);
+  }
+
+  @Post()
+  @UseGuards(JwtGuard)
+  createLog(
+    @Req() req: Request & { user: AuthUser },
+    @Body() dto: CreateLogDto,
+  ) {
+    return this.dailyLogsService.createLog(req.user, dto);
   }
 }

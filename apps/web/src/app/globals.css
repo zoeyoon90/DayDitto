@@ -14,15 +14,20 @@ body {
 body {
   color: var(--foreground);
   background: var(--background);
+  font-family: var(--font-yeongwol), sans-serif;
 }
 
 @theme {
+  /* 폰트 */
+  --font-sans: var(--font-yeongwol), sans-serif;
+
   /* TwoLog 팔레트 A — 평화와 평온 */
   --color-background: #a6c2ce; /* 페이지 배경 */
   --color-card: #f5f1e8; /* 카드/일기장 영역 */
   --color-main: #5e8ca7; /* 버튼, 강조 요소 */
-  --color-accent: #d9a86c; /* CTA, 하이라이트 포인트 */
+  --color-accent: #e78e23; /* CTA, 하이라이트 포인트 */
   --color-foreground: #2f3e46; /* 기본 텍스트 */
+
 
   /* 버튼(neobrutalism) 토큰 — 팔레트에 맞춰 연결 */
   --color-mtext: #2f3e46;

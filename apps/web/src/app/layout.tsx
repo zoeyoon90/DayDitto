@@ -1,9 +1,23 @@
 import type { Metadata } from 'next';
+import { Do_Hyeon } from 'next/font/google';
+import localFont from 'next/font/local';
 import './globals.css';
 
+const doHyeon = Do_Hyeon({
+  weight: '400',
+  subsets: ['latin'],
+  variable: '--font-do-hyeon',
+  display: 'swap',
+});
+
+const yeongwol = localFont({
+  src: '../fonts/YeongwolTTF.woff2',
+  variable: '--font-yeongwol',
+  display: 'swap',
+});
 
 export const metadata: Metadata = {
-  title: 'TwoLog',
+  title: 'DayDitto',
   description: '나의 하루를 다른 언어로 다시 쓰다, 일기 기반 영어 학습 서비스',
 };
 
@@ -13,8 +27,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="ko">
-      <body>
+    <html lang="ko" className={`${doHyeon.variable} ${yeongwol.variable}`}>
+      <body className={yeongwol.className}>
           {children}
       </body>
     </html>
