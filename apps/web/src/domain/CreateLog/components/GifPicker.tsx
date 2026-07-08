@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
+import Image from 'next/image';
 
 type KlipyGif = {
   id: number;
@@ -100,9 +101,9 @@ export default function GifPicker({ anchorRect, onSelect, onClose }: GifPickerPr
                     onSelect(url);
                     onClose();
                   }}
-                  className="aspect-square overflow-hidden rounded-base hover:opacity-80 transition-opacity"
+                  className="relative aspect-square overflow-hidden rounded-base hover:opacity-80 transition-opacity"
                 >
-                  <img src={url} alt="" className="w-full h-full object-cover" />
+                  <Image src={url} alt="" fill unoptimized className="object-cover" />
                 </button>
               ) : null;
             })}

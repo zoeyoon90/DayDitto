@@ -42,7 +42,9 @@ export class DailyLogsService {
     dto: CreateLogDto,
   ) {
     const validProviders = ['kakao', 'google', 'email'] as const;
-    const provider = validProviders.includes(authUser.provider as (typeof validProviders)[number])
+    const provider = validProviders.includes(
+      authUser.provider as (typeof validProviders)[number],
+    )
       ? (authUser.provider as (typeof validProviders)[number])
       : 'email';
 
@@ -61,7 +63,9 @@ export class DailyLogsService {
     const [existing] = await db
       .select({ id: dailyLogs.id })
       .from(dailyLogs)
-      .where(and(eq(dailyLogs.userId, userId), eq(dailyLogs.logDate, dto.logDate)));
+      .where(
+        and(eq(dailyLogs.userId, userId), eq(dailyLogs.logDate, dto.logDate)),
+      );
 
     if (existing) {
       const [updated] = await db

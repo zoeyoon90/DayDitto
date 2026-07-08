@@ -1,6 +1,7 @@
 'use client';
 
 import { useRef, useState } from 'react';
+import Image from 'next/image';
 import GifPicker from './GifPicker';
 
 type ImageUploadProps = {
@@ -31,10 +32,12 @@ export default function ImageUpload({ image, onImageChange, compact }: ImageUplo
       <div className="shrink-0 relative">
         {image ? (
           <div className="relative w-8 h-8 border border-border rounded-base overflow-hidden">
-            <img
+            <Image
               src={previewSrc}
               alt="업로드된 이미지"
-              className="w-full h-full object-cover cursor-pointer"
+              fill
+              unoptimized
+              className="object-cover cursor-pointer"
               onClick={(e) => {
                 if (typeof image === 'string') {
                   setGifAnchor((e.currentTarget as HTMLElement).getBoundingClientRect());
@@ -84,10 +87,12 @@ export default function ImageUpload({ image, onImageChange, compact }: ImageUplo
     <div className="w-full">
       {image ? (
         <div className="relative w-full aspect-square border-2 border-border shadow-shadow overflow-hidden rounded-base">
-          <img
+          <Image
             src={previewSrc}
             alt="업로드된 이미지"
-            className="w-full h-full object-cover"
+            fill
+            unoptimized
+            className="object-cover"
           />
           <button
             onClick={handleRemove}
