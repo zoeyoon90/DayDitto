@@ -157,37 +157,41 @@ export default function CreateLogContainer() {
 
       {/* 일기 카드 */}
       <div
-        className="border-2 border-border shadow-shadow rounded-base overflow-hidden"
-        style={{
-          backgroundColor: '#fdfaf4',
-          backgroundImage: `
-            repeating-linear-gradient(
-              transparent 0px,
-              transparent 25px,
-              rgba(150, 175, 220, 0.55) 25px,
-              rgba(150, 175, 220, 0.55) 26px
-            ),
-            linear-gradient(
-              90deg,
-              transparent 0px,
-              transparent 19px,
-              rgba(210, 100, 100, 0.45) 15px,
-              rgba(210, 100, 100, 0.45) 21px,
-              transparent 1px
-            )
-          `,
-          backgroundSize: '100% 26px, 100% 100%',
-          backgroundPosition: '0 5px, 0 0',
-          paddingTop: '5px',
-        }}
+        className="border-2 border-border shadow-shadow rounded-base overflow-x-auto"
+        style={{ backgroundColor: '#fdfaf4' }}
       >
-        <DiaryLineList
-          lines={lines}
-          focusLineId={focusLineId}
-          onChange={updateLine}
-          onDelete={removeLine}
-          onEnter={addLineAfter}
-        />
+        <div
+          className="min-w-max"
+          style={{
+            backgroundImage: `
+              repeating-linear-gradient(
+                transparent 0px,
+                transparent 25px,
+                rgba(150, 175, 220, 0.55) 25px,
+                rgba(150, 175, 220, 0.55) 26px
+              ),
+              linear-gradient(
+                90deg,
+                transparent 0px,
+                transparent 19px,
+                rgba(210, 100, 100, 0.45) 15px,
+                rgba(210, 100, 100, 0.45) 21px,
+                transparent 1px
+              )
+            `,
+            backgroundSize: '100% 26px, 100% 100%',
+            backgroundPosition: '0 5px, 0 0',
+            paddingTop: '5px',
+          }}
+        >
+          <DiaryLineList
+            lines={lines}
+            focusLineId={focusLineId}
+            onChange={updateLine}
+            onDelete={removeLine}
+            onEnter={addLineAfter}
+          />
+        </div>
       </div>
 
       {/* 액션 버튼 */}
