@@ -12,7 +12,7 @@ export default function NavBar() {
       {/* 메뉴 */}
       <div className="flex gap-6">
         <Button asChild className='bg-card h-8 w-16' >
-          <Link href="/calendar">캘린더</Link>
+          <Link href="/calender">캘린더</Link>
         </Button>
         <Button asChild className='bg-accent h-8 w-16'>
           <Link href="/create">일기쓰기</Link>
