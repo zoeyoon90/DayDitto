@@ -15,6 +15,8 @@ export interface DailyLogDetail {
   id: string
   logDate: string
   imageUrl: string | null
+  mood: string | null
+  weather: string | null
   koreanContent: string
   englishContent: string | null
 }

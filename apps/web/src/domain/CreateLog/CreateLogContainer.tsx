@@ -101,7 +101,7 @@ export default function CreateLogContainer() {
     const res = await fetch('/api/logs', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ logDate, koreanContent, englishContent, imageUrl }),
+      body: JSON.stringify({ logDate, koreanContent, englishContent, imageUrl, mood: mood ?? undefined, weather: weather ?? undefined }),
     });
     if (res.ok) {
       const { id } = await res.json() as { id: string };
