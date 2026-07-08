@@ -3,6 +3,7 @@ import {
   Body,
   Controller,
   Get,
+  Param,
   Post,
   Query,
   Req,
@@ -41,6 +42,12 @@ export class DailyLogsController {
     }
 
     return this.dailyLogsService.getMonthlyLogs(req.user.id, year, month);
+  }
+
+  @Get(':id')
+  @UseGuards(JwtGuard)
+  getLog(@Req() req: Request & { user: AuthUser }, @Param('id') id: string) {
+    return this.dailyLogsService.getLogById(req.user.id, id);
   }
 
   @Post()

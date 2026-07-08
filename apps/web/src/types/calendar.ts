@@ -10,3 +10,11 @@ export interface MonthlyLogsResponse {
   timezone: string // IANA e.g. "Asia/Seoul"
   logs: MonthlyLog[]
 }
+
+export interface DailyLogDetail {
+  id: string
+  logDate: string
+  imageUrl: string | null
+  koreanContent: string
+  englishContent: string | null
+}

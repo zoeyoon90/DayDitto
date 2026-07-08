@@ -93,4 +93,18 @@ export class DailyLogsService {
       .returning({ id: dailyLogs.id });
     return created;
   }
+
+  async getLogById(userId: string, id: string) {
+    const [log] = await db
+      .select()
+      .from(dailyLogs)
+      .where(
+        and(
+          eq(dailyLogs.id, id),
+          eq(dailyLogs.userId, userId),
+          isNull(dailyLogs.deletedAt),
+        ),
+      );
+    return log ?? null;
+  }
 }
