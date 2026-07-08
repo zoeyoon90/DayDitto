@@ -11,7 +11,7 @@ export default function LoginContainer() {
         <div className="mt-6">
           <SocialLogin />
         </div>
-        <p className="mt-6 text-center text-sm text-text/60">
+        <p className="mt-6 text-center text-sm text-text">
           아직 계정이 없으신가요?{' '}
           <Link href="/signup" className="font-bold text-main underline">
             회원가입

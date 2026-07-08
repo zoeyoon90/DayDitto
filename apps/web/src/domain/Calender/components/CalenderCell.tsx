@@ -28,7 +28,7 @@ export default function CalenderCell({
 
   const cellClass = cn(
     'relative aspect-square rounded-base border-2 border-border overflow-hidden flex flex-col',
-    isToday && 'ring-2 ring-accent ring-offset-1',
+    isToday && 'ring-4 ring-main ring-offset-0',
   );
 
   const content = (

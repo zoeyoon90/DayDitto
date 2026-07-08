@@ -67,11 +67,11 @@ export default function DiaryLine({
       </div>
 
       {/* English 줄 */}
-      <div className="flex items-center h-[26px] pl-[25px] pr-4 bg-background/50">
+      <div className="flex items-center h-[26px] pl-[25px] pr-4 bg-main">
         <p
           className={cn(
             'flex-1 leading-6 text-xs',
-            line.isTranslated ? 'text-accent' : 'text-foreground/25 italic',
+            line.isTranslated ? 'text-card' : 'text-foreground/25 italic',
           )}
         >
           {line.isTranslated ? line.english : '번역 결과가 여기에 표시됩니다'}

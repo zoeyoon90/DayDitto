@@ -47,7 +47,7 @@
         {errors.root && (
           <p className="text-sm text-red-500 text-center">{errors.root.message}</p>
         )}
-        <Button type="submit" className="w-full" disabled={isSubmitting}>
+        <Button type="submit" className="w-full bg-main" disabled={isSubmitting}>
           {isSubmitting ? '로그인 중...' : '로그인'}
         </Button>
       </form>

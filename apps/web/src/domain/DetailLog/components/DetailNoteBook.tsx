@@ -47,8 +47,8 @@ export default function DetailNoteBook({ koreanContent, englishContent, urls, lo
             <p className="text-sm text-foreground leading-6">{korean}</p>
           </div>
           {englishLines[i] && (
-            <div className="flex items-center h-[26px] pl-[25px] pr-2 bg-background/50">
-              <p className="text-xs text-accent leading-6 flex-1">{englishLines[i]}</p>
+            <div className="flex items-center h-[26px] pl-[25px] pr-2 bg-main">
+              <p className="text-xs text-card leading-6 flex-1">{englishLines[i]}</p>
               <button
                 onClick={() => onPlayLine(i)}
                 disabled={loadingIndex !== null && loadingIndex !== i}

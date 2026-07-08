@@ -8,7 +8,7 @@ export default function Home() {
       <p className="pt-7 text-4xl animate-fade-in text-center leading-12 ">
         나의 하루를 <br/>다른 언어로 다시 쓰다
       </p>
-      <Button asChild className="mt-10 animate-fade-in [animation-delay:1s]">
+      <Button asChild className="mt-10 bg-main animate-fade-in [animation-delay:1s]">
         <Link href="/login">로그인</Link>
       </Button>
     </div>
