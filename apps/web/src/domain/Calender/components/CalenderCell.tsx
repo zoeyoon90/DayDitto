@@ -44,7 +44,7 @@ export default function CalenderCell({
       ) : null}
       <span
         className={cn(
-          'relative z-10 text-xs font-bold leading-none p-1',
+          'relative z-10 text-[10px] sm:text-xs font-bold leading-none p-0.5 sm:p-1',
           log?.imageUrl ? 'text-bw drop-shadow-sm' : 'text-foreground',
           isToday && !log?.imageUrl && 'text-main',
           isSunday && 'text-red-500',

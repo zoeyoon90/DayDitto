@@ -124,9 +124,9 @@ export default function CreateLogContainer() {
   };
 
   return (
-    <div className="max-w-201.5 mx-auto px-4 py-6 flex flex-col gap-6">
+    <div className="max-w-201.5 mx-auto px-2 py-4 sm:px-4 sm:py-6 flex flex-col gap-6">
       {/* 날짜/날씨/기분/이미지 navbar */}
-      <div className="flex items-center gap-2 px-1 py-2 border-b border-border/10">
+      <div className="flex items-center gap-2 px-1 py-2 border-b border-border/10 overflow-x-auto">
         <DayMeta
           date={formatDate(new Date())}
           mood={mood}

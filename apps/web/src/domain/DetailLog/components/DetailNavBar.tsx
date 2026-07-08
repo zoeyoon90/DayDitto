@@ -21,21 +21,23 @@ interface Props {
 
 export default function DetailNavBar({ logDate, weather, mood, imageUrl, hasAudio, playingAll, onPlayAll }: Props) {
   return (
-    <div className="flex items-center gap-2 px-1 py-2 border-b border-border/10">
+    <div className="flex items-center gap-2 px-1 py-2 border-b border-border/10 overflow-x-auto">
       <div className="border border-border rounded-base px-2 h-7 flex items-center shrink-0">
         <p className="text-sm text-foreground/90 whitespace-nowrap">{formatDate(logDate)}</p>
       </div>
 
       <div className="w-px h-4 bg-border shrink-0" />
-      <div className="border border-border rounded-base px-2 h-7 flex items-center gap-1 shrink-0">
-        <span className="text-xs text-foreground/40">날씨</span>
-        {weather && <span className="text-sm leading-none">{weather}</span>}
+      <div className="border border-border rounded-base px-2 h-7 flex items-center shrink-0">
+        {weather
+          ? <span className="text-sm leading-none">{weather}</span>
+          : <span className="text-xs text-foreground/40">날씨</span>}
       </div>
 
       <div className="w-px h-4 bg-border shrink-0" />
-      <div className="border border-border rounded-base px-2 h-7 flex items-center gap-1 shrink-0">
-        <span className="text-xs text-foreground/40">감정</span>
-        {mood && <span className="text-sm leading-none">{mood}</span>}
+      <div className="border border-border rounded-base px-2 h-7 flex items-center shrink-0">
+        {mood
+          ? <span className="text-sm leading-none">{mood}</span>
+          : <span className="text-xs text-foreground/40">감정</span>}
       </div>
 
       {imageUrl && (

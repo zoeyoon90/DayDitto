@@ -121,7 +121,6 @@ export default function DetailLogContainer({ log }: Props) {
       <DetailNoteBook
         koreanContent={log.koreanContent}
         englishContent={log.englishContent}
-        urls={urls}
         loadingIndex={loadingIndex}
         playingIndex={playingIndex}
         onPlayLine={playLine}

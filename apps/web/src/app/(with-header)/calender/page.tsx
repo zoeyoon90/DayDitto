@@ -17,7 +17,7 @@ export default async function CalenderPage({ searchParams }: CalenderPageProps) 
   )
 
   return (
-    <div className="flex flex-col items-center py-6 px-4">
+    <div className="flex flex-col items-center py-4 px-2 sm:py-6 sm:px-4">
       <CalenderContainer data={data} year={year} month={month} />
     </div>
   )

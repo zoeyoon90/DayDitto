@@ -26,47 +26,48 @@ const notebookStyle = {
 interface Props {
   koreanContent: string
   englishContent: string | null
-  urls: (string | null)[]
   loadingIndex: number | null
   playingIndex: number | null
   onPlayLine: (index: number) => void
 }
 
-export default function DetailNoteBook({ koreanContent, englishContent, urls, loadingIndex, playingIndex, onPlayLine }: Props) {
+export default function DetailNoteBook({ koreanContent, englishContent, loadingIndex, playingIndex, onPlayLine }: Props) {
   const koreanLines = koreanContent.split('\n')
   const englishLines = englishContent?.split('\n') ?? []
 
   return (
     <div
-      className="border-2 border-border shadow-shadow rounded-base overflow-hidden"
-      style={notebookStyle}
+      className="border-2 border-border shadow-shadow rounded-base overflow-x-auto"
+      style={{ backgroundColor: '#fdfaf4' }}
     >
-      {koreanLines.map((korean, i) => (
-        <div key={i}>
-          <div className="flex items-center h-[26px] pl-[25px] pr-4">
-            <p className="text-sm text-foreground leading-6">{korean}</p>
-          </div>
-          {englishLines[i] && (
-            <div className="flex items-center h-[26px] pl-[25px] pr-2 bg-main">
-              <p className="text-xs text-card leading-6 flex-1">{englishLines[i]}</p>
-              <button
-                onClick={() => onPlayLine(i)}
-                disabled={loadingIndex !== null && loadingIndex !== i}
-                className="shrink-0 w-6 h-6 flex items-center justify-center rounded text-foreground/40 hover:text-accent transition-colors disabled:opacity-30"
-                aria-label="발음 듣기"
-              >
-                {loadingIndex === i ? (
-                  <span className="text-[10px]">...</span>
-                ) : playingIndex === i ? (
-                  <span className="text-xs">⏸</span>
-                ) : (
-                  <span className="text-xs">🔊</span>
-                )}
-              </button>
+      <div className="min-w-max" style={notebookStyle}>
+        {koreanLines.map((korean, i) => (
+          <div key={i}>
+            <div className="flex items-center h-6.5 pl-6.25 pr-4">
+              <p className="text-sm text-foreground leading-6 whitespace-nowrap">{korean}</p>
             </div>
-          )}
-        </div>
-      ))}
+            {englishLines[i] && (
+              <div className="flex items-center h-6.5 pl-6.25 pr-2 bg-main">
+                <p className="text-xs text-card leading-6 flex-1 whitespace-nowrap">{englishLines[i]}</p>
+                <button
+                  onClick={() => onPlayLine(i)}
+                  disabled={loadingIndex !== null && loadingIndex !== i}
+                  className="shrink-0 w-6 h-6 flex items-center justify-center rounded text-foreground/40 hover:text-accent transition-colors disabled:opacity-30"
+                  aria-label="발음 듣기"
+                >
+                  {loadingIndex === i ? (
+                    <span className="text-[10px]">...</span>
+                  ) : playingIndex === i ? (
+                    <span className="text-xs">⏸</span>
+                  ) : (
+                    <span className="text-xs">🔊</span>
+                  )}
+                </button>
+              </div>
+            )}
+          </div>
+        ))}
+      </div>
     </div>
   )
 }

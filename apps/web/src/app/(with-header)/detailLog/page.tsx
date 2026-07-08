@@ -13,7 +13,7 @@ export default async function DetailLogPage({ searchParams }: Props) {
   const log = await apiFetchWithAuth<DailyLogDetail>(`/daily-logs/${id}`)
 
   return (
-    <div className="flex flex-col items-center px-4">
+    <div className="flex flex-col items-center px-2 sm:px-4">
       <DetailLogContainer log={log} />
     </div>
   )

@@ -36,7 +36,7 @@ export default function CalenderGrid({
   logs.forEach((log) => logMap.set(log.logDate, log));
 
   return (
-    <div className="grid grid-cols-7 gap-1">
+    <div className="grid grid-cols-7 gap-0.5 sm:gap-1">
       {DAY_LABELS.map(({ label, className }) => (
         <div
           key={label}
