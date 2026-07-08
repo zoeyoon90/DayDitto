@@ -1,11 +1,13 @@
 'use client';
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import ImageUpload from './components/ImageUpload';
 import DiaryLineList from './components/DiaryLineList';
 import DiaryActionBar from './components/DiaryActionBar';
 import DayMeta from './components/DayMeta';
 import { DiaryLineData } from './components/DiaryLine';
+import { createClient } from '@/lib/supabase/client';
 
 const createLine = (): DiaryLineData => ({
   id: crypto.randomUUID(),
@@ -23,6 +25,7 @@ const formatDate = (date: Date) =>
   });
 
 export default function CreateLogContainer() {
+  const router = useRouter();
   const [lines, setLines] = useState<DiaryLineData[]>([createLine()]);
   const [image, setImage] = useState<File | string | null>(null);
   const [isTranslating, setIsTranslating] = useState(false);
@@ -71,9 +74,36 @@ export default function CreateLogContainer() {
     }
   };
 
-  const handleSave = () => {
-    // TODO: POST /api/logs — { date, imageUrl, lines }
-    console.log('저장:', { lines, image });
+  const handleSave = async () => {
+    const koreanContent = lines.map((l) => l.korean).filter(Boolean).join('\n');
+    if (!koreanContent.trim()) return;
+
+    let imageUrl: string | null = null;
+
+    if (image instanceof File) {
+      const supabase = createClient();
+      const ext = image.name.split('.').pop();
+      const path = `${crypto.randomUUID()}.${ext}`;
+      const { data, error } = await supabase.storage
+        .from('diary-images')
+        .upload(path, image);
+      if (!error && data) {
+        const { data: urlData } = supabase.storage.from('diary-images').getPublicUrl(data.path);
+        imageUrl = urlData.publicUrl;
+      }
+    } else if (typeof image === 'string') {
+      imageUrl = image;
+    }
+
+    const englishContent = lines.map((l) => l.english).filter(Boolean).join('\n') || undefined;
+    const logDate = new Date().toISOString().split('T')[0];
+
+    const res = await fetch('/api/logs', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ logDate, koreanContent, englishContent, imageUrl }),
+    });
+    if (res.ok) router.push('/calender');
   };
 
   return (

@@ -12,6 +12,7 @@ import * as jwt from 'jsonwebtoken';
 interface SupabaseJwtPayload extends jwt.JwtPayload {
   email: string;
   user_metadata?: { nickname?: string };
+  app_metadata?: { provider?: string };
 }
 
 @Injectable()
@@ -51,6 +52,7 @@ export class JwtGuard implements CanActivate {
         id: payload.sub,
         email: payload.email,
         nickname: payload.user_metadata?.nickname,
+        provider: payload.app_metadata?.provider ?? 'email',
       };
 
       return true;
