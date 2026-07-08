@@ -15,13 +15,13 @@ const MONTH_NAMES = [
 export default function CalenderHeader({ year, month, onPrev, onNext }: CalenderHeaderProps) {
   return (
     <div className="flex items-center justify-between mb-4">
-      <Button variant="neutral" size="icon" onClick={onPrev}>
+      <Button variant="noShadow" size="icon" onClick={onPrev} className="text-base sm:text-xl">
         ‹
       </Button>
-      <h2 className="text-lg font-bold text-foreground">
+      <h2 className="text-sm sm:text-lg font-bold text-foreground">
         {year}년 {MONTH_NAMES[month - 1]}
       </h2>
-      <Button variant="neutral" size="icon" onClick={onNext}>
+      <Button variant="noShadow" size="icon" onClick={onNext} className="text-base sm:text-xl">
         ›
       </Button>
     </div>

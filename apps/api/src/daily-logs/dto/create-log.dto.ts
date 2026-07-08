@@ -3,4 +3,6 @@ export class CreateLogDto {
   koreanContent: string;
   englishContent?: string;
   imageUrl?: string;
+  mood?: string;
+  weather?: string;
 }

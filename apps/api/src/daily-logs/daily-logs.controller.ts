@@ -3,6 +3,8 @@ import {
   Body,
   Controller,
   Get,
+  Param,
+  Patch,
   Post,
   Query,
   Req,
@@ -41,6 +43,36 @@ export class DailyLogsController {
     }
 
     return this.dailyLogsService.getMonthlyLogs(req.user.id, year, month);
+  }
+
+  @Get(':id')
+  @UseGuards(JwtGuard)
+  getLog(@Req() req: Request & { user: AuthUser }, @Param('id') id: string) {
+    return this.dailyLogsService.getLogById(req.user.id, id);
+  }
+
+  @Patch(':id/audio')
+  @UseGuards(JwtGuard)
+  updateAudio(
+    @Req() req: Request & { user: AuthUser },
+    @Param('id') id: string,
+    @Body() body: { audioUrl: string },
+  ) {
+    return this.dailyLogsService.updateAudioUrl(req.user.id, id, body.audioUrl);
+  }
+
+  @Patch(':id/line-audio')
+  @UseGuards(JwtGuard)
+  updateLineAudio(
+    @Req() req: Request & { user: AuthUser },
+    @Param('id') id: string,
+    @Body() body: { lineAudioUrls: string[] },
+  ) {
+    return this.dailyLogsService.updateLineAudioUrls(
+      req.user.id,
+      id,
+      body.lineAudioUrls,
+    );
   }
 
   @Post()

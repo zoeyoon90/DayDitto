@@ -74,6 +74,8 @@ export class DailyLogsService {
           koreanContent: dto.koreanContent,
           englishContent: dto.englishContent ?? null,
           imageUrl: dto.imageUrl ?? null,
+          mood: dto.mood ?? null,
+          weather: dto.weather ?? null,
           updatedAt: new Date(),
         })
         .where(eq(dailyLogs.id, existing.id))
@@ -89,8 +91,42 @@ export class DailyLogsService {
         koreanContent: dto.koreanContent,
         englishContent: dto.englishContent ?? null,
         imageUrl: dto.imageUrl ?? null,
+        mood: dto.mood ?? null,
+        weather: dto.weather ?? null,
       })
       .returning({ id: dailyLogs.id });
     return created;
+  }
+
+  async updateAudioUrl(userId: string, id: string, audioUrl: string) {
+    await db
+      .update(dailyLogs)
+      .set({ audioUrl, updatedAt: new Date() })
+      .where(and(eq(dailyLogs.id, id), eq(dailyLogs.userId, userId)));
+  }
+
+  async updateLineAudioUrls(
+    userId: string,
+    id: string,
+    lineAudioUrls: string[],
+  ) {
+    await db
+      .update(dailyLogs)
+      .set({ lineAudioUrls, updatedAt: new Date() })
+      .where(and(eq(dailyLogs.id, id), eq(dailyLogs.userId, userId)));
+  }
+
+  async getLogById(userId: string, id: string) {
+    const [log] = await db
+      .select()
+      .from(dailyLogs)
+      .where(
+        and(
+          eq(dailyLogs.id, id),
+          eq(dailyLogs.userId, userId),
+          isNull(dailyLogs.deletedAt),
+        ),
+      );
+    return log ?? null;
   }
 }

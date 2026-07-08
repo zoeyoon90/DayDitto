@@ -28,7 +28,7 @@ export default function CalenderCell({
 
   const cellClass = cn(
     'relative aspect-square rounded-base border-2 border-border overflow-hidden flex flex-col',
-    isToday && 'ring-2 ring-accent ring-offset-1',
+    isToday && 'ring-4 ring-main ring-offset-0',
   );
 
   const content = (
@@ -44,7 +44,7 @@ export default function CalenderCell({
       ) : null}
       <span
         className={cn(
-          'relative z-10 text-xs font-bold leading-none p-1',
+          'relative z-10 text-[10px] sm:text-xs font-bold leading-none p-0.5 sm:p-1',
           log?.imageUrl ? 'text-bw drop-shadow-sm' : 'text-foreground',
           isToday && !log?.imageUrl && 'text-main',
           isSunday && 'text-red-500',
