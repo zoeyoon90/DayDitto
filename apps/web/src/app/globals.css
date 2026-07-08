@@ -1,7 +1,7 @@
 @import 'tailwindcss';
 
 :root {
-  --background: #a6c2ce;
+  --background: #f5f1e8;
   --foreground: #2f3e46;
 }
 
@@ -24,8 +24,8 @@ body {
   /* TwoLog 팔레트 A — 평화와 평온 */
   --color-background: #a6c2ce; /* 페이지 배경 */
   --color-card: #f5f1e8; /* 카드/일기장 영역 */
-  --color-main: #5e8ca7; /* 버튼, 강조 요소 */
-  --color-accent: #e78e23; /* CTA, 하이라이트 포인트 */
+  --color-main: #e78e23; /* 버튼, 강조 요소 */
+  --color-accent: #5e8ca7; /* CTA, 하이라이트 포인트 */
   --color-foreground: #2f3e46; /* 기본 텍스트 */
 
 

@@ -21,7 +21,7 @@ export default function DiaryActionBar({
         variant="neutral"
         onClick={onTranslate}
         disabled={isTranslating || isSaving}
-        className="bg-accent border-border text-foreground hover:translate-x-boxShadowX hover:translate-y-boxShadowY hover:shadow-none h-8 w-16"
+        className="bg-main border-border text-foreground hover:translate-x-boxShadowX hover:translate-y-boxShadowY hover:shadow-none h-8 w-16"
       >
         {isTranslating ? '번역 중...' : '번역하기'}
       </Button>
