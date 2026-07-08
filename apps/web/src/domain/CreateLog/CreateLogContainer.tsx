@@ -54,14 +54,16 @@ export default function CreateLogContainer() {
   const handleTranslate = async () => {
     setIsTranslating(true);
     try {
-      // TODO: Claude Haiku API 연동 — POST /api/translate { lines: korean[] }
-      // 임시 stub: 각 줄에 placeholder 번역 표시
-      await new Promise((r) => setTimeout(r, 800));
+      const res = await fetch('/api/translate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ lines: lines.map((l) => l.korean) }),
+      });
+      const json = await res.json() as { translations?: string[] };
+      if (!res.ok || !json.translations) return;
       setLines((prev) =>
-        prev.map((l) =>
-          l.korean.trim()
-            ? { ...l, english: `(번역 예정) ${l.korean}`, isTranslated: true }
-            : l,
+        prev.map((l, i) =>
+          json.translations![i] ? { ...l, english: json.translations![i], isTranslated: true } : l,
         ),
       );
     } finally {
