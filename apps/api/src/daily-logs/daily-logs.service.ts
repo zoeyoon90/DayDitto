@@ -105,7 +105,11 @@ export class DailyLogsService {
       .where(and(eq(dailyLogs.id, id), eq(dailyLogs.userId, userId)));
   }
 
-  async updateLineAudioUrls(userId: string, id: string, lineAudioUrls: string[]) {
+  async updateLineAudioUrls(
+    userId: string,
+    id: string,
+    lineAudioUrls: string[],
+  ) {
     await db
       .update(dailyLogs)
       .set({ lineAudioUrls, updatedAt: new Date() })

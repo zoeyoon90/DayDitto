@@ -68,7 +68,11 @@ export class DailyLogsController {
     @Param('id') id: string,
     @Body() body: { lineAudioUrls: string[] },
   ) {
-    return this.dailyLogsService.updateLineAudioUrls(req.user.id, id, body.lineAudioUrls);
+    return this.dailyLogsService.updateLineAudioUrls(
+      req.user.id,
+      id,
+      body.lineAudioUrls,
+    );
   }
 
   @Post()
