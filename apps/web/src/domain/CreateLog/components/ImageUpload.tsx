@@ -1,6 +1,7 @@
 'use client';
 
 import { useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import Image from 'next/image';
 import GifPicker from './GifPicker';
 
@@ -13,7 +14,9 @@ type ImageUploadProps = {
 export default function ImageUpload({ image, onImageChange, compact }: ImageUploadProps) {
   const inputRef = useRef<HTMLInputElement>(null);
   const gifButtonRef = useRef<HTMLButtonElement>(null);
+  const thumbRef = useRef<HTMLDivElement>(null);
   const [gifAnchor, setGifAnchor] = useState<DOMRect | null>(null);
+  const [previewRect, setPreviewRect] = useState<DOMRect | null>(null);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0] ?? null;
@@ -31,29 +34,38 @@ export default function ImageUpload({ image, onImageChange, compact }: ImageUplo
     return (
       <div className="shrink-0 relative">
         {image ? (
-          <div className="relative w-8 h-8 border border-border rounded-base overflow-hidden">
-            <Image
-              src={previewSrc}
-              alt="업로드된 이미지"
-              fill
-              unoptimized
-              className="object-cover cursor-pointer"
-              onClick={(e) => {
-                if (typeof image === 'string') {
-                  setGifAnchor((e.currentTarget as HTMLElement).getBoundingClientRect());
-                } else {
-                  inputRef.current?.click();
-                }
-              }}
-            />
-            <button
+          <>
+            <div
+              ref={thumbRef}
+              className="relative w-8 h-8 border border-border rounded-base overflow-hidden cursor-pointer"
               onClick={handleRemove}
-              className="absolute -top-1 -right-1 w-4 h-4 bg-bw border border-border text-foreground text-xs flex items-center justify-center rounded-full leading-none"
-              aria-label="이미지 삭제"
+              onMouseEnter={() => setPreviewRect(thumbRef.current?.getBoundingClientRect() ?? null)}
+              onMouseLeave={() => setPreviewRect(null)}
             >
-              ×
-            </button>
-          </div>
+              <Image
+                src={previewSrc}
+                alt="업로드된 이미지"
+                fill
+                unoptimized
+                className="object-cover"
+              />
+            </div>
+            {previewRect && createPortal(
+              <div
+                style={{
+                  position: 'fixed',
+                  top: previewRect.bottom + 8,
+                  left: previewRect.left,
+                  zIndex: 50,
+                }}
+                className="rounded-base overflow-hidden border-2 border-border shadow-shadow"
+              >
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={previewSrc} alt="미리보기" style={{ display: 'block', maxWidth: '320px', maxHeight: '320px' }} />
+              </div>,
+              document.body
+            )}
+          </>
         ) : (
           <div className="flex gap-1.5">
             <button

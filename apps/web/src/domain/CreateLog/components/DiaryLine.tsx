@@ -17,6 +17,7 @@ type DiaryLineProps = {
   onChange: (id: string, value: string) => void;
   onDelete: (id: string) => void;
   onEnter: (id: string) => void;
+  font?: string;
 };
 
 export default function DiaryLine({
@@ -26,6 +27,7 @@ export default function DiaryLine({
   onChange,
   onDelete,
   onEnter,
+  font,
 }: DiaryLineProps) {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
@@ -50,6 +52,7 @@ export default function DiaryLine({
         <span
           className="whitespace-pre text-sm leading-6 invisible pointer-events-none select-none"
           aria-hidden="true"
+          style={{ fontFamily: font }}
         >
           {line.korean || '오늘 하루를 한 문장으로 써보세요...'}
         </span>
@@ -61,6 +64,7 @@ export default function DiaryLine({
           onKeyDown={handleKeyDown}
           placeholder="오늘 하루를 한 문장으로 써보세요..."
           rows={1}
+          style={{ fontFamily: font }}
           className="absolute inset-0 pl-6.25 pr-4 h-full resize-none bg-transparent outline-none text-sm text-foreground placeholder:text-foreground/25 leading-6 overflow-hidden"
         />
         {showDelete && (
@@ -81,6 +85,7 @@ export default function DiaryLine({
             'flex-1 leading-6 text-xs whitespace-nowrap',
             line.isTranslated ? 'text-card' : 'text-foreground/60 italic',
           )}
+          style={{ fontFamily: font }}
         >
           {line.isTranslated ? line.english : '번역 결과가 여기에 표시됩니다'}
         </p>

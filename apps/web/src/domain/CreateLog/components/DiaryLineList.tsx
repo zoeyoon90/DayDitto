@@ -8,6 +8,7 @@ type DiaryLineListProps = {
   onChange: (id: string, value: string) => void;
   onDelete: (id: string) => void;
   onEnter: (id: string) => void;
+  font?: string;
 };
 
 export default function DiaryLineList({
@@ -16,6 +17,7 @@ export default function DiaryLineList({
   onChange,
   onDelete,
   onEnter,
+  font,
 }: DiaryLineListProps) {
   return (
     <div>
@@ -28,6 +30,7 @@ export default function DiaryLineList({
           onChange={onChange}
           onDelete={onDelete}
           onEnter={onEnter}
+          font={font}
         />
       ))}
     </div>

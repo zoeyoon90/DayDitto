@@ -29,9 +29,10 @@ interface Props {
   loadingIndex: number | null
   playingIndex: number | null
   onPlayLine: (index: number) => void
+  font?: string
 }
 
-export default function DetailNoteBook({ koreanContent, englishContent, loadingIndex, playingIndex, onPlayLine }: Props) {
+export default function DetailNoteBook({ koreanContent, englishContent, loadingIndex, playingIndex, onPlayLine, font }: Props) {
   const koreanLines = koreanContent.split('\n')
   const englishLines = englishContent?.split('\n') ?? []
 
@@ -40,7 +41,7 @@ export default function DetailNoteBook({ koreanContent, englishContent, loadingI
       className="border-2 border-border shadow-shadow rounded-base overflow-x-auto"
       style={{ backgroundColor: '#fdfaf4' }}
     >
-      <div className="min-w-max" style={notebookStyle}>
+      <div className="min-w-max" style={{ ...notebookStyle, fontFamily: font }}>
         {koreanLines.map((korean, i) => (
           <div key={i}>
             <div className="flex items-center h-6.5 pl-6.25 pr-4">

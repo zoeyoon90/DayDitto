@@ -4,6 +4,7 @@ import { useRef, useState } from 'react'
 import { DailyLogDetail } from '@/types/calendar'
 import DetailNavBar from './components/DetailNavBar'
 import DetailNoteBook from './components/DetailNoteBook'
+import FontPickerModal, { FontKey, FONTS } from '@/components/FontPickerModal/FontPickerModal'
 
 interface Props {
   log: DailyLogDetail | null
@@ -16,6 +17,8 @@ export default function DetailLogContainer({ log }: Props) {
   const [loadingIndex, setLoadingIndex] = useState<number | null>(null)
   const [playingIndex, setPlayingIndex] = useState<number | null>(null)
   const [playingAll, setPlayingAll] = useState(false)
+  const [font, setFont] = useState<FontKey>('yeongwol')
+  const [showFontModal, setShowFontModal] = useState(false)
   const audioRef = useRef<HTMLAudioElement | null>(null)
 
   if (!log) return <p className="text-foreground/40">일기를 찾을 수 없습니다.</p>
@@ -107,6 +110,8 @@ export default function DetailLogContainer({ log }: Props) {
 
   const hasAudio = englishLines.some(Boolean)
 
+  const currentFontVar = FONTS.find((f) => f.key === font)!.cssVar
+
   return (
     <div className="max-w-201.5 w-full py-6 flex flex-col gap-6">
       <DetailNavBar
@@ -117,6 +122,7 @@ export default function DetailLogContainer({ log }: Props) {
         hasAudio={hasAudio}
         playingAll={playingAll}
         onPlayAll={playAll}
+        onFontClick={() => setShowFontModal(true)}
       />
       <DetailNoteBook
         koreanContent={log.koreanContent}
@@ -124,7 +130,15 @@ export default function DetailLogContainer({ log }: Props) {
         loadingIndex={loadingIndex}
         playingIndex={playingIndex}
         onPlayLine={playLine}
+        font={currentFontVar}
       />
+      {showFontModal && (
+        <FontPickerModal
+          currentFont={font}
+          onSelect={setFont}
+          onClose={() => setShowFontModal(false)}
+        />
+      )}
     </div>
   )
 }
