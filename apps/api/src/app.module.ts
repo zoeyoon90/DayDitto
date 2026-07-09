@@ -5,6 +5,11 @@ import { AppService } from './app.service';
 import { AuthModule } from './auth/auth.module';
 import { DailyLogsModule } from './daily-logs/daily-logs.module';
 import { FavoriteExpressionsModule } from './favorite-expressions/favorite-expressions.module';
+import { TranslateModule } from './translate/translate.module';
+import { TtsModule } from './tts/tts.module';
+import { GifModule } from './gif/gif.module';
+import { UploadModule } from './upload/upload.module';
+import { UsersModule } from './users/users.module';
 
 @Module({
   imports: [
@@ -12,6 +17,11 @@ import { FavoriteExpressionsModule } from './favorite-expressions/favorite-expre
     AuthModule,
     DailyLogsModule,
     FavoriteExpressionsModule,
+    TranslateModule,
+    TtsModule,
+    GifModule,
+    UploadModule,
+    UsersModule,
   ],
   controllers: [AppController],
   providers: [AppService],

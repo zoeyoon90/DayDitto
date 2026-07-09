@@ -1,30 +1,38 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
-
-interface FavoriteExpression {
-  id: string;
-  koreanText: string;
-  englishText: string;
-  audioUrl: string | null;
-  createdAt: string;
-}
+import { useRef, useState } from 'react';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { queryKeys } from '@/lib/queryKeys';
+import { fetchFavorites, deleteFavorite, FavoriteExpression } from '@/api/favorites.api';
+import { ttsFavorite } from '@/api/tts.api';
 
 export default function Bookmarks() {
-  const [favorites, setFavorites] = useState<FavoriteExpression[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [deletingId, setDeletingId] = useState<string | null>(null);
+  const queryClient = useQueryClient();
   const [playingId, setPlayingId] = useState<string | null>(null);
-  const [loadingId, setLoadingId] = useState<string | null>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
-  useEffect(() => {
-    fetch('/api/favorites')
-      .then((r) => (r.ok ? r.json() : []))
-      .then((data: FavoriteExpression[]) => setFavorites(data))
-      .catch(() => setFavorites([]))
-      .finally(() => setLoading(false));
-  }, []);
+  const { data: favorites = [], isLoading } = useQuery({
+    queryKey: queryKeys.favorites(),
+    queryFn: () => fetchFavorites().catch(() => []),
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: (id: string) => deleteFavorite(id),
+    onSuccess: (_, id) => {
+      if (playingId === id) stopCurrent();
+      queryClient.invalidateQueries({ queryKey: queryKeys.favorites() });
+    },
+  });
+
+  const ttsMutation = useMutation({
+    mutationFn: ({ id, text }: { id: string; text: string }) =>
+      ttsFavorite({ favoriteId: id, text }),
+    onSuccess: (data, { id }) => {
+      queryClient.setQueryData(queryKeys.favorites(), (prev: FavoriteExpression[]) =>
+        prev.map((f) => (f.id === id ? { ...f, audioUrl: data.audioUrl } : f)),
+      );
+    },
+  });
 
   const stopCurrent = () => {
     if (audioRef.current) {
@@ -45,26 +53,9 @@ export default function Bookmarks() {
     let audioUrl = item.audioUrl;
 
     if (!audioUrl) {
-      setLoadingId(item.id);
-      try {
-        const res = await fetch('/api/tts-favorite', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ favoriteId: item.id, text: item.englishText }),
-        });
-        const data = (await res.json()) as { audioUrl?: string; error?: string };
-        if (!res.ok || !data.audioUrl) return;
-        audioUrl = data.audioUrl;
-        // 로컬 state에도 URL 반영
-        setFavorites((prev) =>
-          prev.map((f) => (f.id === item.id ? { ...f, audioUrl: data.audioUrl! } : f)),
-        );
-      } finally {
-        setLoadingId(null);
-      }
+      const data = await ttsMutation.mutateAsync({ id: item.id, text: item.englishText });
+      audioUrl = data.audioUrl;
     }
-
-    if (!audioUrl) return;
 
     const audio = new Audio(audioUrl);
     audioRef.current = audio;
@@ -76,20 +67,7 @@ export default function Bookmarks() {
     setPlayingId(item.id);
   };
 
-  const handleDelete = async (id: string) => {
-    if (playingId === id) stopCurrent();
-    setDeletingId(id);
-    try {
-      const res = await fetch(`/api/favorites/${id}`, { method: 'DELETE' });
-      if (res.ok || res.status === 204) {
-        setFavorites((prev) => prev.filter((f) => f.id !== id));
-      }
-    } finally {
-      setDeletingId(null);
-    }
-  };
-
-  if (loading) {
+  if (isLoading) {
     return <p className="text-sm text-foreground/50">불러오는 중...</p>;
   }
 
@@ -104,40 +82,45 @@ export default function Bookmarks() {
         </p>
       ) : (
         <ul className="flex flex-col gap-3">
-          {favorites.map((item) => (
-            <li
-              key={item.id}
-              className="border-2 border-border rounded-base p-4 bg-bw flex flex-col gap-1 shadow-shadow relative pr-16"
-            >
-              <p className="text-sm text-foreground">{item.koreanText}</p>
-              <p className="text-sm text-foreground/60">{item.englishText}</p>
+          {favorites.map((item) => {
+            const isDeleting = deleteMutation.isPending && deleteMutation.variables === item.id;
+            const isTtsLoading = ttsMutation.isPending && ttsMutation.variables?.id === item.id;
 
-              <div className="absolute top-3 right-3 flex items-center gap-1">
-                <button
-                  onClick={() => handlePlay(item)}
-                  disabled={loadingId !== null && loadingId !== item.id}
-                  className="w-6 h-6 flex items-center justify-center text-foreground hover:text-accent transition-colors disabled:opacity-30"
-                  aria-label="발음 듣기"
-                >
-                  {loadingId === item.id ? (
-                    <span className="text-[10px]">...</span>
-                  ) : playingId === item.id ? (
-                    <span className="text-xs">⏸</span>
-                  ) : (
-                    <span className="text-xs">🔊</span>
-                  )}
-                </button>
-                <button
-                  onClick={() => handleDelete(item.id)}
-                  disabled={deletingId === item.id}
-                  className="w-6 h-6 flex items-center justify-center text-foreground hover:text-red-400 transition-colors text-xs disabled:opacity-40"
-                  aria-label="삭제"
-                >
-                  {deletingId === item.id ? '...' : '✕'}
-                </button>
-              </div>
-            </li>
-          ))}
+            return (
+              <li
+                key={item.id}
+                className="border-2 border-border rounded-base p-4 bg-bw flex flex-col gap-1 shadow-shadow relative pr-16"
+              >
+                <p className="text-sm text-foreground">{item.koreanText}</p>
+                <p className="text-sm text-foreground/60">{item.englishText}</p>
+
+                <div className="absolute top-3 right-3 flex items-center gap-1">
+                  <button
+                    onClick={() => handlePlay(item)}
+                    disabled={ttsMutation.isPending && ttsMutation.variables?.id !== item.id}
+                    className="w-6 h-6 flex items-center justify-center text-foreground hover:text-accent transition-colors disabled:opacity-30"
+                    aria-label="발음 듣기"
+                  >
+                    {isTtsLoading ? (
+                      <span className="text-[10px]">...</span>
+                    ) : playingId === item.id ? (
+                      <span className="text-xs">⏸</span>
+                    ) : (
+                      <span className="text-xs">🔊</span>
+                    )}
+                  </button>
+                  <button
+                    onClick={() => deleteMutation.mutate(item.id)}
+                    disabled={isDeleting}
+                    className="w-6 h-6 flex items-center justify-center text-foreground hover:text-red-400 transition-colors text-xs disabled:opacity-40"
+                    aria-label="삭제"
+                  >
+                    {isDeleting ? '...' : '✕'}
+                  </button>
+                </div>
+              </li>
+            );
+          })}
         </ul>
       )}
     </div>

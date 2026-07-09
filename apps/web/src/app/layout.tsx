@@ -2,6 +2,8 @@ import type { Metadata } from 'next';
 import { Do_Hyeon } from 'next/font/google';
 import localFont from 'next/font/local';
 import './globals.css';
+import { QueryProvider } from '@/providers/QueryProvider';
+import { AuthProvider } from '@/providers/AuthProvider';
 
 const doHyeon = Do_Hyeon({
   weight: '400',
@@ -35,7 +37,11 @@ export default function RootLayout({
   return (
     <html lang="ko" className={`${doHyeon.variable} ${yeongwol.variable} ${keriskedu.variable}`}>
       <body className={yeongwol.className}>
-          {children}
+        <QueryProvider>
+          <AuthProvider>
+            {children}
+          </AuthProvider>
+        </QueryProvider>
       </body>
     </html>
   );

@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/Button/Button';
+import { deleteUser } from '@/api/user.api';
 
 interface Props {
   onClose: () => void;
@@ -17,13 +18,10 @@ export default function DeleteAccountModal({ onClose }: Props) {
     setLoading(true);
     setError(null);
     try {
-      const res = await fetch('/api/user', { method: 'DELETE' });
-      if (!res.ok) {
-        const data = (await res.json()) as { error?: string };
-        setError(data.error ?? '회원탈퇴 중 오류가 발생했습니다.');
-        return;
-      }
+      await deleteUser();
       router.push('/');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : '회원탈퇴 중 오류가 발생했습니다.');
     } finally {
       setLoading(false);
     }

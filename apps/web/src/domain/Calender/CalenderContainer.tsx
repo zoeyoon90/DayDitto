@@ -1,27 +1,36 @@
 'use client'
 
-import { useRouter } from 'next/navigation'
-import { MonthlyLogsResponse } from '@/types/calendar'
+import { useState } from 'react'
+import { useQuery } from '@tanstack/react-query'
+import { queryKeys } from '@/lib/queryKeys'
+import { fetchMonthlyLogs } from '@/api/logs.api'
 import CalenderHeader from './components/CalenderHeader'
 import CalenderGrid from './components/CalenderGrid'
 
 interface CalenderContainerProps {
-  data: MonthlyLogsResponse
-  year: number
-  month: number
+  initialYear: number
+  initialMonth: number
 }
 
-export default function CalenderContainer({ data, year, month }: CalenderContainerProps) {
-  const router = useRouter()
+export default function CalenderContainer({ initialYear, initialMonth }: CalenderContainerProps) {
+  const [year, setYear] = useState(initialYear)
+  const [month, setMonth] = useState(initialMonth)
+
+  const { data, isLoading } = useQuery({
+    queryKey: queryKeys.calendar(year, month),
+    queryFn: () => fetchMonthlyLogs(year, month),
+  })
 
   const handlePrev = () => {
     const d = new Date(year, month - 2, 1)
-    router.push(`/calender?year=${d.getFullYear()}&month=${d.getMonth() + 1}`)
+    setYear(d.getFullYear())
+    setMonth(d.getMonth() + 1)
   }
 
   const handleNext = () => {
     const d = new Date(year, month, 1)
-    router.push(`/calender?year=${d.getFullYear()}&month=${d.getMonth() + 1}`)
+    setYear(d.getFullYear())
+    setMonth(d.getMonth() + 1)
   }
 
   return (
@@ -32,12 +41,16 @@ export default function CalenderContainer({ data, year, month }: CalenderContain
         onPrev={handlePrev}
         onNext={handleNext}
       />
-      <CalenderGrid
-        year={year}
-        month={month}
-        logs={data.logs}
-        timezone={data.timezone}
-      />
+      {isLoading || !data ? (
+        <div className="flex items-center justify-center h-64 text-foreground/40">불러오는 중...</div>
+      ) : (
+        <CalenderGrid
+          year={year}
+          month={month}
+          logs={data.logs}
+          timezone={data.timezone}
+        />
+      )}
     </div>
   )
 }

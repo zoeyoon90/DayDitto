@@ -7,5 +7,6 @@ import { FavoriteExpressionsService } from './favorite-expressions.service';
   imports: [AuthModule],
   controllers: [FavoriteExpressionsController],
   providers: [FavoriteExpressionsService],
+  exports: [FavoriteExpressionsService],
 })
 export class FavoriteExpressionsModule {}
