@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import Image from 'next/image';
 import { Button } from '@/components/Button/Button';
 import Input from '@/components/Input/Input';
 import PasswordChangeModal from './PasswordChangeModal';
@@ -54,7 +55,7 @@ export default function ProfileInfo({ email, nickname: initialNickname, provider
         <div className="flex items-center justify-between border-2 border-border rounded-base px-3 py-2 bg-bw/50">
           <p className="text-sm text-text/70">{email}</p>
           {socialIcon && (
-            <img src={socialIcon} alt={provider} className="w-5 h-5 shrink-0" />
+            <Image src={socialIcon} alt={provider ?? ''} width={20} height={20} className="shrink-0" />
           )}
         </div>
       </div>

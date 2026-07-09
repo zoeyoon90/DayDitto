@@ -24,7 +24,9 @@ interface AuthUser {
 @Controller('favorite-expressions')
 @UseGuards(JwtGuard)
 export class FavoriteExpressionsController {
-  constructor(private readonly favoriteExpressionsService: FavoriteExpressionsService) {}
+  constructor(
+    private readonly favoriteExpressionsService: FavoriteExpressionsService,
+  ) {}
 
   @Get()
   findAll(
@@ -44,7 +46,10 @@ export class FavoriteExpressionsController {
 
   @Delete(':id')
   @HttpCode(204)
-  async remove(@Req() req: Request & { user: AuthUser }, @Param('id') id: string) {
+  async remove(
+    @Req() req: Request & { user: AuthUser },
+    @Param('id') id: string,
+  ) {
     await this.favoriteExpressionsService.remove(req.user.id, id);
   }
 
@@ -54,6 +59,10 @@ export class FavoriteExpressionsController {
     @Param('id') id: string,
     @Body() body: { audioUrl: string },
   ) {
-    return this.favoriteExpressionsService.updateAudioUrl(req.user.id, id, body.audioUrl);
+    return this.favoriteExpressionsService.updateAudioUrl(
+      req.user.id,
+      id,
+      body.audioUrl,
+    );
   }
 }

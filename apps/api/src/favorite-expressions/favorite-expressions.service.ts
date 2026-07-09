@@ -1,4 +1,8 @@
-import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  ForbiddenException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { and, desc, eq } from 'drizzle-orm';
 import { db } from '../db';
 import { favoriteExpressions } from '../db/schema';
@@ -8,7 +12,8 @@ import { CreateFavoriteDto } from './dto/create-favorite.dto';
 export class FavoriteExpressionsService {
   async findAll(userId: string, dailyLogId?: string) {
     const conditions = [eq(favoriteExpressions.userId, userId)];
-    if (dailyLogId) conditions.push(eq(favoriteExpressions.dailyLogId, dailyLogId));
+    if (dailyLogId)
+      conditions.push(eq(favoriteExpressions.dailyLogId, dailyLogId));
     return db
       .select()
       .from(favoriteExpressions)
@@ -37,12 +42,18 @@ export class FavoriteExpressionsService {
       .where(eq(favoriteExpressions.id, id));
 
     if (!existing) throw new NotFoundException('즐겨찾기를 찾을 수 없습니다.');
-    if (existing.userId !== userId) throw new ForbiddenException('권한이 없습니다.');
+    if (existing.userId !== userId)
+      throw new ForbiddenException('권한이 없습니다.');
 
     const [updated] = await db
       .update(favoriteExpressions)
       .set({ audioUrl })
-      .where(and(eq(favoriteExpressions.id, id), eq(favoriteExpressions.userId, userId)))
+      .where(
+        and(
+          eq(favoriteExpressions.id, id),
+          eq(favoriteExpressions.userId, userId),
+        ),
+      )
       .returning();
     return updated;
   }
@@ -54,10 +65,16 @@ export class FavoriteExpressionsService {
       .where(eq(favoriteExpressions.id, id));
 
     if (!existing) throw new NotFoundException('즐겨찾기를 찾을 수 없습니다.');
-    if (existing.userId !== userId) throw new ForbiddenException('권한이 없습니다.');
+    if (existing.userId !== userId)
+      throw new ForbiddenException('권한이 없습니다.');
 
     await db
       .delete(favoriteExpressions)
-      .where(and(eq(favoriteExpressions.id, id), eq(favoriteExpressions.userId, userId)));
+      .where(
+        and(
+          eq(favoriteExpressions.id, id),
+          eq(favoriteExpressions.userId, userId),
+        ),
+      );
   }
 }
