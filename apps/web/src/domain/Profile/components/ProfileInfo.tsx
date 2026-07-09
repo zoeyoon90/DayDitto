@@ -5,6 +5,7 @@ import Image from 'next/image';
 import { Button } from '@/components/Button/Button';
 import Input from '@/components/Input/Input';
 import PasswordChangeModal from './PasswordChangeModal';
+import { updateUser } from '@/api/user.api';
 
 const SOCIAL_ICONS: Record<string, string> = {
   google: '/Icon/GoogleIcon.svg',
@@ -27,18 +28,11 @@ export default function ProfileInfo({ email, nickname: initialNickname, provider
     setSaving(true);
     setSaveMessage(null);
     try {
-      const res = await fetch('/api/user', {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ nickname }),
-      });
-      const data = (await res.json()) as { error?: string };
-      if (!res.ok) {
-        setSaveMessage(data.error ?? '저장 중 오류가 발생했습니다.');
-        return;
-      }
+      await updateUser(nickname);
       setSaveMessage('저장되었습니다.');
       setTimeout(() => setSaveMessage(null), 2000);
+    } catch (err) {
+      setSaveMessage(err instanceof Error ? err.message : '저장 중 오류가 발생했습니다.');
     } finally {
       setSaving(false);
     }

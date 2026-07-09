@@ -7,5 +7,6 @@ import { DailyLogsService } from './daily-logs.service';
   imports: [AuthModule],
   controllers: [DailyLogsController],
   providers: [DailyLogsService],
+  exports: [DailyLogsService],
 })
 export class DailyLogsModule {}

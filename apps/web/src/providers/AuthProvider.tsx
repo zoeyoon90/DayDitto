@@ -1,20 +1,17 @@
 'use client';
 
-import { createContext, useContext, useEffect, useState } from 'react';
+import { createContext, useContext } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { queryKeys } from '@/lib/queryKeys';
+import { fetchUser, UserInfo } from '@/api/user.api';
 
-type User = { id: string; email?: string; nickname?: string | null; provider?: string } | null;
-
-const AuthContext = createContext<User>(null);
+const AuthContext = createContext<UserInfo | null>(null);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [user, setUser] = useState<User>(null);
-
-  useEffect(() => {
-    fetch('/api/user')
-      .then((r) => (r.ok ? r.json() : null))
-      .then(setUser)
-      .catch(() => setUser(null));
-  }, []);
+  const { data: user = null } = useQuery({
+    queryKey: queryKeys.user(),
+    queryFn: () => fetchUser().catch(() => null),
+  });
 
   return <AuthContext.Provider value={user}>{children}</AuthContext.Provider>;
 }

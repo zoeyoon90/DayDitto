@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { fetchFavorites, createFavorite, deleteFavorite } from '@/api/favorites.api'
 
 const notebookStyle = {
   backgroundColor: '#fdfaf4',
@@ -43,9 +44,8 @@ export default function DetailNoteBook({ logId, koreanContent, englishContent, l
   const [savingIndex, setSavingIndex] = useState<number | null>(null)
 
   useEffect(() => {
-    fetch(`/api/favorites?dailyLogId=${logId}`)
-      .then((r) => (r.ok ? r.json() : []))
-      .then((data: { id: string; koreanText: string }[]) => {
+    fetchFavorites(logId)
+      .then((data) => {
         const map = new Map<number, string>()
         data.forEach((fav) => {
           const idx = koreanLines.indexOf(fav.koreanText)
@@ -68,24 +68,24 @@ export default function DetailNoteBook({ logId, koreanContent, englishContent, l
 
     if (existingId) {
       try {
-        const res = await fetch(`/api/favorites/${existingId}`, { method: 'DELETE' })
-        if (res.ok) {
-          setSavedMap((prev) => { const next = new Map(prev); next.delete(index); return next })
-        }
+        await deleteFavorite(existingId)
+        setSavedMap((prev) => { const next = new Map(prev); next.delete(index); return next })
+      } catch {
+        // ignore
       } finally {
         setSavingIndex(null)
       }
     } else {
       try {
-        const res = await fetch('/api/favorites', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ dailyLogId: logId, koreanText: korean, englishText: english, audioUrl: lineAudioUrls[index] ?? undefined }),
+        const data = await createFavorite({
+          dailyLogId: logId,
+          koreanText: korean,
+          englishText: english,
+          audioUrl: lineAudioUrls[index] ?? undefined,
         })
-        if (res.ok) {
-          const data = await res.json() as { id: string }
-          setSavedMap((prev) => new Map(prev).set(index, data.id))
-        }
+        setSavedMap((prev) => new Map(prev).set(index, data.id))
+      } catch {
+        // ignore
       } finally {
         setSavingIndex(null)
       }

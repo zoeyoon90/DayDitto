@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import Image from 'next/image';
+import { fetchGifs } from '@/api/gif.api';
 
 type KlipyGif = {
   id: number;
@@ -38,20 +39,18 @@ export default function GifPicker({ anchorRect, onSelect, onClose }: GifPickerPr
   useEffect(() => {
     clearTimeout(debounceRef.current);
     if (!query.trim()) {
-      fetchGifs('');
+      loadGifs('');
       return;
     }
-    debounceRef.current = setTimeout(() => fetchGifs(query), 300);
+    debounceRef.current = setTimeout(() => loadGifs(query), 300);
     return () => clearTimeout(debounceRef.current);
   }, [query]);
 
-  const fetchGifs = async (q: string) => {
+  const loadGifs = async (q: string) => {
     setLoading(true);
     try {
-      const url = q ? `/api/gif?q=${encodeURIComponent(q)}` : '/api/gif';
-      const res = await fetch(url);
-      const json = await res.json();
-      setGifs(json.data?.data ?? []);
+      const json = await fetchGifs(q || undefined);
+      setGifs((json.data?.data ?? []) as KlipyGif[]);
     } finally {
       setLoading(false);
     }

@@ -3,13 +3,14 @@
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Button } from '../Button/Button';
-import { signOut } from '@/lib/auth';
+import { createClient } from '@/lib/supabase/client';
 
 export default function NavBar() {
   const router = useRouter();
 
   const handleLogout = async () => {
-    await signOut();
+    const supabase = createClient();
+    await supabase.auth.signOut();
     router.push('/login');
   };
 

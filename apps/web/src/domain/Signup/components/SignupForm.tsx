@@ -4,7 +4,7 @@ import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useRouter } from 'next/navigation'
 import { signupSchema, type SignupFormData } from '@/types/auth'
-import { signup } from '@/lib/auth'
+import { createClient } from '@/lib/supabase/client'
 import Input from '@/components/Input/Input'
 import { Button } from '@/components/Button/Button'
 
@@ -20,9 +20,14 @@ export default function SignupForm() {
   })
 
   const onSubmit = async ({ passwordConfirm: _, ...data }: SignupFormData) => {
-    const { error } = await signup(data)
+    const supabase = createClient()
+    const { error } = await supabase.auth.signUp({
+      email: data.email,
+      password: data.password,
+      options: { data: { nickname: data.nickname } },
+    })
     if (error) {
-      setError('root', { message: error })
+      setError('root', { message: error.message })
       return
     }
     router.push('/login')

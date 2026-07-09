@@ -9,6 +9,10 @@ import DiaryActionBar from './components/DiaryActionBar';
 import DayMeta from './components/DayMeta';
 import { DiaryLineData } from './components/DiaryLine';
 import FontPickerModal, { FontKey, FONTS } from '@/components/FontPickerModal/FontPickerModal';
+import { translate } from '@/api/translate.api';
+import { uploadImage } from '@/api/upload.api';
+import { createLog } from '@/api/logs.api';
+import { ttsBatch } from '@/api/tts.api';
 
 const createLine = (): DiaryLineData => ({
   id: crypto.randomUUID(),
@@ -62,16 +66,11 @@ export default function CreateLogContainer() {
   const handleTranslate = async () => {
     setIsTranslating(true);
     try {
-      const res = await fetch('/api/translate', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ lines: lines.map((l) => l.korean) }),
-      });
-      const json = await res.json() as { translations?: string[] };
-      if (!res.ok || !json.translations) return;
+      const json = await translate(lines.map((l) => l.korean));
+      if (!json.translations) return;
       setLines((prev) =>
         prev.map((l, i) =>
-          json.translations![i] ? { ...l, english: json.translations![i], isTranslated: true } : l,
+          json.translations[i] ? { ...l, english: json.translations[i], isTranslated: true } : l,
         ),
       );
     } finally {
@@ -89,38 +88,27 @@ export default function CreateLogContainer() {
       let imageUrl: string | null = null;
 
       if (image instanceof File) {
-        const formData = new FormData();
-        formData.append('file', image);
-        const uploadRes = await fetch('/api/upload', { method: 'POST', body: formData });
-        if (!uploadRes.ok) {
-          const { error } = await uploadRes.json() as { error: string };
-          throw new Error(`이미지 업로드 실패: ${error}`);
-        }
-        const { url } = await uploadRes.json() as { url: string };
+        const { url } = await uploadImage(image);
         imageUrl = url;
       } else if (typeof image === 'string') {
         imageUrl = image;
       }
 
       const englishContent = lines.map((l) => l.english).filter(Boolean).join('\n') || undefined;
-      const logDate = new Date().toISOString().split('T')[0];
+      const logDate = new Date().toISOString().split('T')[0]!;
 
-      const res = await fetch('/api/logs', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ logDate, koreanContent, englishContent, imageUrl, mood: mood ?? undefined, weather: weather ?? undefined }),
+      const { id } = await createLog({
+        logDate,
+        koreanContent,
+        englishContent,
+        imageUrl,
+        mood: mood ?? undefined,
+        weather: weather ?? undefined,
       });
-      if (!res.ok) throw new Error(`일기 저장 실패 (${res.status})`);
 
-      const { id } = await res.json() as { id: string };
       const englishLines = lines.map((l) => l.english).filter(Boolean);
       if (englishLines.length > 0) {
-        const ttsRes = await fetch('/api/tts-batch', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ logId: id, lines: englishLines }),
-        });
-        if (!ttsRes.ok) throw new Error('음성 생성 실패');
+        await ttsBatch({ logId: id, lines: englishLines });
       }
 
       setSaveStatus('idle');
