@@ -17,9 +17,10 @@ interface Props {
   hasAudio?: boolean
   playingAll?: boolean
   onPlayAll?: () => void
+  onFontClick?: () => void
 }
 
-export default function DetailNavBar({ logDate, weather, mood, imageUrl, hasAudio, playingAll, onPlayAll }: Props) {
+export default function DetailNavBar({ logDate, weather, mood, imageUrl, hasAudio, playingAll, onPlayAll, onFontClick }: Props) {
   return (
     <div className="flex items-center gap-2 px-1 py-2 border-b border-border/10 overflow-x-auto">
       <div className="border border-border rounded-base px-2 h-7 flex items-center shrink-0">
@@ -56,6 +57,17 @@ export default function DetailNavBar({ logDate, weather, mood, imageUrl, hasAudi
           >
             <span className="text-sm leading-none">{playingAll ? '⏹' : '▶'}</span>
             <span>{playingAll ? '정지' : '전체 듣기'}</span>
+          </button>
+        </>
+      )}
+      {onFontClick && (
+        <>
+          <div className="w-px h-4 bg-border shrink-0" />
+          <button
+            onClick={onFontClick}
+            className="flex items-center gap-1 border border-border rounded-base px-2.5 h-7 text-xs text-foreground/70 hover:text-foreground hover:bg-main/10 transition-colors shrink-0"
+          >
+            <span>폰트</span>
           </button>
         </>
       )}

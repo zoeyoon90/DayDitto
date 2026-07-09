@@ -8,6 +8,7 @@ import DiaryActionBar from './components/DiaryActionBar';
 import DayMeta from './components/DayMeta';
 import { DiaryLineData } from './components/DiaryLine';
 import { createClient } from '@/lib/supabase/client';
+import FontPickerModal, { FontKey, FONTS } from '@/components/FontPickerModal/FontPickerModal';
 
 const createLine = (): DiaryLineData => ({
   id: crypto.randomUUID(),
@@ -33,6 +34,8 @@ export default function CreateLogContainer() {
   const [weather, setWeather] = useState<string | null>(null);
   const [focusLineId, setFocusLineId] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
+  const [font, setFont] = useState<FontKey>('yeongwol');
+  const [showFontModal, setShowFontModal] = useState(false);
 
   const addLineAfter = (id: string) => {
     const newLine = createLine();
@@ -153,6 +156,14 @@ export default function CreateLogContainer() {
         <div className="hidden sm:block shrink-0">
           <ImageUpload compact image={image} onImageChange={setImage} />
         </div>
+
+        {/* 폰트 버튼 */}
+        <button
+          onClick={() => setShowFontModal(true)}
+          className="px-3 h-7 border-2 border-border bg-card rounded-base text-xs font-base text-foreground/80 shadow-shadow hover:translate-x-boxShadowX hover:translate-y-boxShadowY hover:shadow-none transition-all whitespace-nowrap"
+        >
+          폰트
+        </button>
       </div>
 
       {/* 일기 카드 */}
@@ -190,6 +201,7 @@ export default function CreateLogContainer() {
             onChange={updateLine}
             onDelete={removeLine}
             onEnter={addLineAfter}
+            font={FONTS.find((f) => f.key === font)!.cssVar}
           />
         </div>
       </div>
@@ -201,6 +213,13 @@ export default function CreateLogContainer() {
         onTranslate={handleTranslate}
         onSave={handleSave}
       />
+      {showFontModal && (
+        <FontPickerModal
+          currentFont={font}
+          onSelect={setFont}
+          onClose={() => setShowFontModal(false)}
+        />
+      )}
     </div>
   );
 }
