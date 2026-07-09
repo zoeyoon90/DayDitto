@@ -5,9 +5,9 @@ export default function NavBar() {
   return (
     <nav className="fixed top-0 left-0 z-50 flex h-13 w-full items-center justify-between px-4 sm:px-8">
       {/* 로고 */}
-      <Link href="/" className="text-xl sm:text-2xl font-bold">
+      <span className="text-xl sm:text-2xl font-bold">
         DayDitto
-      </Link>
+      </span>
 
       {/* 메뉴 */}
       <div className="flex gap-2 sm:gap-6">
