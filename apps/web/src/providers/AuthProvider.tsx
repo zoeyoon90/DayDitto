@@ -2,7 +2,7 @@
 
 import { createContext, useContext, useEffect, useState } from 'react';
 
-type User = { id: string; email?: string } | null;
+type User = { id: string; email?: string; nickname?: string | null; provider?: string } | null;
 
 const AuthContext = createContext<User>(null);
 
