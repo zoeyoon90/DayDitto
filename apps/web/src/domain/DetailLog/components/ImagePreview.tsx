@@ -31,6 +31,7 @@ export default function ImagePreview({ src }: Props) {
           }}
           className="rounded-base overflow-hidden border-2 border-border shadow-shadow"
         >
+          {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src={src} alt="일기 이미지 확대" style={{ display: 'block', maxWidth: '320px', maxHeight: '320px' }} />
         </div>,
         document.body

@@ -60,6 +60,7 @@ export default function ImageUpload({ image, onImageChange, compact }: ImageUplo
                 }}
                 className="rounded-base overflow-hidden border-2 border-border shadow-shadow"
               >
+                {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img src={previewSrc} alt="미리보기" style={{ display: 'block', maxWidth: '320px', maxHeight: '320px' }} />
               </div>,
               document.body
