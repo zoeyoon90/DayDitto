@@ -1,5 +1,5 @@
 ---
-name: pre-push-pr v2
+name: pre-push-pr
 description: Push 전 검증(lint, typecheck, build, test)과 PR 본문 작성을 자동화하는 워크플로우. 사용자가 "push 준비", "PR 만들어줘", "PR 내용 써줘", "머지 준비", "검증하고 PR 정리해줘" 등 push나 PR과 관련된 요청을 하면 반드시 이 스킬을 사용할 것. 검증 실패 시 이유를 설명하고 동의 후 수정·재검증하며, 통과하면 브랜치 변경사항을 분석해 각 변경의 이유와 의도를 담은 PR 본문을 작성해 사용자에게 전달한다. push는 절대 Claude가 하지 않고 사용자가 직접 한다.
 ---
 
