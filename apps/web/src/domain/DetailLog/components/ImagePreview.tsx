@@ -1,6 +1,7 @@
 'use client'
 
-import { useState } from 'react'
+import { useRef, useState } from 'react'
+import { createPortal } from 'react-dom'
 import Image from 'next/image'
 
 interface Props {
@@ -8,21 +9,31 @@ interface Props {
 }
 
 export default function ImagePreview({ src }: Props) {
-  const [hovered, setHovered] = useState(false)
+  const thumbRef = useRef<HTMLDivElement>(null)
+  const [previewRect, setPreviewRect] = useState<DOMRect | null>(null)
 
   return (
     <div
       className="relative"
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
+      onMouseEnter={() => setPreviewRect(thumbRef.current?.getBoundingClientRect() ?? null)}
+      onMouseLeave={() => setPreviewRect(null)}
     >
-      <div className="relative w-8 h-8 border border-border rounded-base overflow-hidden cursor-pointer">
+      <div ref={thumbRef} className="relative w-8 h-8 border border-border rounded-base overflow-hidden cursor-pointer">
         <Image src={src} alt="일기 이미지" fill unoptimized className="object-cover" />
       </div>
-      {hovered && (
-        <div className="absolute top-full left-0 mt-2 w-48 h-48 rounded-base overflow-hidden border-2 border-border shadow-shadow z-50">
-          <Image src={src} alt="일기 이미지 확대" fill unoptimized className="object-cover" />
-        </div>
+      {previewRect && createPortal(
+        <div
+          style={{
+            position: 'fixed',
+            top: previewRect.bottom + 8,
+            left: previewRect.left,
+            zIndex: 50,
+          }}
+          className="rounded-base overflow-hidden border-2 border-border shadow-shadow"
+        >
+          <img src={src} alt="일기 이미지 확대" style={{ display: 'block', maxWidth: '320px', maxHeight: '320px' }} />
+        </div>,
+        document.body
       )}
     </div>
   )
