@@ -50,9 +50,12 @@ export class UsersController {
     }
 
     const adminSupabase = this.getAdminClient();
-    const { error } = await adminSupabase.auth.admin.updateUserById(req.user.id, {
-      user_metadata: { nickname },
-    });
+    const { error } = await adminSupabase.auth.admin.updateUserById(
+      req.user.id,
+      {
+        user_metadata: { nickname },
+      },
+    );
     if (error) throw new InternalServerErrorException(error.message);
     return { success: true };
   }

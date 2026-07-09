@@ -9,7 +9,9 @@ export class TranslateController {
 
   @Post()
   async translate(@Body() body: { lines: string[] }) {
-    const translations = await this.translateService.translate(body.lines ?? []);
+    const translations = await this.translateService.translate(
+      body.lines ?? [],
+    );
     return { translations };
   }
 }

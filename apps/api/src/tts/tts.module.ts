@@ -7,7 +7,12 @@ import { TtsController } from './tts.controller';
 import { TtsService } from './tts.service';
 
 @Module({
-  imports: [ConfigModule, AuthModule, DailyLogsModule, FavoriteExpressionsModule],
+  imports: [
+    ConfigModule,
+    AuthModule,
+    DailyLogsModule,
+    FavoriteExpressionsModule,
+  ],
   controllers: [TtsController],
   providers: [TtsService],
 })

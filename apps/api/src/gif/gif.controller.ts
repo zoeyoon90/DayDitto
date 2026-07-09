@@ -16,6 +16,6 @@ export class GifController {
       : `${base}/trending?per_page=24`;
 
     const res = await fetch(url);
-    return res.json();
+    return res.json() as Promise<unknown>;
   }
 }

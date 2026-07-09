@@ -17,7 +17,12 @@ export class TtsController {
     @Req() req: Request & { user: AuthUser },
     @Body() body: { logId: string; lineIndex: number; text: string },
   ) {
-    return this.ttsService.ttsLine(req.user.id, body.logId, body.lineIndex, body.text);
+    return this.ttsService.ttsLine(
+      req.user.id,
+      body.logId,
+      body.lineIndex,
+      body.text,
+    );
   }
 
   @Post('batch')

@@ -21,7 +21,8 @@ export class TtsService {
 
   private async synthesize(text: string): Promise<Buffer> {
     const apiKey = this.configService.get<string>('GOOGLE_TTS_API_KEY');
-    if (!apiKey) throw new InternalServerErrorException('GOOGLE_TTS_API_KEY not set');
+    if (!apiKey)
+      throw new InternalServerErrorException('GOOGLE_TTS_API_KEY not set');
 
     const res = await fetch(
       `https://texttospeech.googleapis.com/v1/text:synthesize?key=${apiKey}`,
@@ -35,7 +36,10 @@ export class TtsService {
         }),
       },
     );
-    if (!res.ok) throw new InternalServerErrorException(`TTS API error: ${await res.text()}`);
+    if (!res.ok)
+      throw new InternalServerErrorException(
+        `TTS API error: ${await res.text()}`,
+      );
     const { audioContent } = (await res.json()) as { audioContent: string };
     return Buffer.from(audioContent, 'base64');
   }
@@ -52,7 +56,12 @@ export class TtsService {
     return publicUrl;
   }
 
-  async ttsLine(userId: string, logId: string, lineIndex: number, text: string) {
+  async ttsLine(
+    userId: string,
+    logId: string,
+    lineIndex: number,
+    text: string,
+  ) {
     const audio = await this.synthesize(text);
     const publicUrl = await this.uploadAudio(
       `${userId}/${logId}/line-${lineIndex}.mp3`,
@@ -60,9 +69,15 @@ export class TtsService {
     );
 
     const log = await this.dailyLogsService.getLogById(userId, logId);
-    const updatedUrls = [...((log?.lineAudioUrls as (string | null)[] | null) ?? [])];
+    const updatedUrls = [
+      ...((log?.lineAudioUrls as (string | null)[] | null) ?? []),
+    ];
     updatedUrls[lineIndex] = publicUrl;
-    await this.dailyLogsService.updateLineAudioUrls(userId, logId, updatedUrls as string[]);
+    await this.dailyLogsService.updateLineAudioUrls(
+      userId,
+      logId,
+      updatedUrls as string[],
+    );
 
     return { audioUrl: publicUrl };
   }
@@ -75,7 +90,11 @@ export class TtsService {
       }),
     );
 
-    await this.dailyLogsService.updateLineAudioUrls(userId, logId, lineAudioUrls);
+    await this.dailyLogsService.updateLineAudioUrls(
+      userId,
+      logId,
+      lineAudioUrls,
+    );
     return { lineAudioUrls };
   }
 
@@ -86,7 +105,11 @@ export class TtsService {
       audio,
     );
 
-    await this.favoriteExpressionsService.updateAudioUrl(userId, favoriteId, publicUrl);
+    await this.favoriteExpressionsService.updateAudioUrl(
+      userId,
+      favoriteId,
+      publicUrl,
+    );
     return { audioUrl: publicUrl };
   }
 }

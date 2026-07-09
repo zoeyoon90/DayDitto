@@ -31,7 +31,9 @@ ${nonEmpty.map((l, i) => `${i + 1}. ${l}`).join('\n')}`,
     });
 
     const text = (message.content[0] as { text: string }).text;
-    const translations: string[] = JSON.parse(text.match(/\[[\s\S]*\]/)?.[0] ?? '[]');
+    const translations = JSON.parse(
+      text.match(/\[[\s\S]*\]/)?.[0] ?? '[]',
+    ) as string[];
 
     let idx = 0;
     return lines.map((l) => (l.trim() ? (translations[idx++] ?? '') : ''));

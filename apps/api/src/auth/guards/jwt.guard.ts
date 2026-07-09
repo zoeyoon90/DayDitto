@@ -15,7 +15,9 @@ export class JwtGuard implements CanActivate {
 
   constructor(configService: ConfigService) {
     this.supabaseUrl = configService.get<string>('SUPABASE_URL')!;
-    this.supabaseServiceKey = configService.get<string>('SUPABASE_SERVICE_ROLE_KEY')!;
+    this.supabaseServiceKey = configService.get<string>(
+      'SUPABASE_SERVICE_ROLE_KEY',
+    )!;
   }
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
@@ -24,8 +26,14 @@ export class JwtGuard implements CanActivate {
 
     if (!token) throw new UnauthorizedException();
 
-    const adminSupabase = createClient(this.supabaseUrl, this.supabaseServiceKey);
-    const { data: { user }, error } = await adminSupabase.auth.getUser(token);
+    const adminSupabase = createClient(
+      this.supabaseUrl,
+      this.supabaseServiceKey,
+    );
+    const {
+      data: { user },
+      error,
+    } = await adminSupabase.auth.getUser(token);
 
     if (error || !user) throw new UnauthorizedException();
 
@@ -33,7 +41,8 @@ export class JwtGuard implements CanActivate {
       id: user.id,
       email: user.email!,
       nickname: (user.user_metadata as { nickname?: string })?.nickname,
-      provider: (user.app_metadata as { provider?: string })?.provider ?? 'email',
+      provider:
+        (user.app_metadata as { provider?: string })?.provider ?? 'email',
     };
 
     return true;
