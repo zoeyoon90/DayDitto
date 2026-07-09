@@ -8,7 +8,6 @@ import DiaryLineList from './components/DiaryLineList';
 import DiaryActionBar from './components/DiaryActionBar';
 import DayMeta from './components/DayMeta';
 import { DiaryLineData } from './components/DiaryLine';
-import { useAuth } from '@/providers/AuthProvider';
 import FontPickerModal, { FontKey, FONTS } from '@/components/FontPickerModal/FontPickerModal';
 
 const createLine = (): DiaryLineData => ({
@@ -28,7 +27,6 @@ const formatDate = (date: Date) =>
 
 export default function CreateLogContainer() {
   const router = useRouter();
-  const user = useAuth();
   const [lines, setLines] = useState<DiaryLineData[]>([createLine()]);
   const [image, setImage] = useState<File | string | null>(null);
   const [isTranslating, setIsTranslating] = useState(false);
