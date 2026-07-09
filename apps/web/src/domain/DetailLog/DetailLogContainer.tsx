@@ -125,8 +125,10 @@ export default function DetailLogContainer({ log }: Props) {
         onFontClick={() => setShowFontModal(true)}
       />
       <DetailNoteBook
+        logId={log.id}
         koreanContent={log.koreanContent}
         englishContent={log.englishContent}
+        lineAudioUrls={urls}
         loadingIndex={loadingIndex}
         playingIndex={playingIndex}
         onPlayLine={playLine}

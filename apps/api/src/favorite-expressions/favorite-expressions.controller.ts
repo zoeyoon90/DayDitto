@@ -3,8 +3,11 @@ import {
   Controller,
   Delete,
   Get,
+  HttpCode,
   Param,
+  Patch,
   Post,
+  Query,
   Req,
   UseGuards,
 } from '@nestjs/common';
@@ -24,8 +27,11 @@ export class FavoriteExpressionsController {
   constructor(private readonly favoriteExpressionsService: FavoriteExpressionsService) {}
 
   @Get()
-  findAll(@Req() req: Request & { user: AuthUser }) {
-    return this.favoriteExpressionsService.findAll(req.user.id);
+  findAll(
+    @Req() req: Request & { user: AuthUser },
+    @Query('dailyLogId') dailyLogId?: string,
+  ) {
+    return this.favoriteExpressionsService.findAll(req.user.id, dailyLogId);
   }
 
   @Post()
@@ -37,7 +43,17 @@ export class FavoriteExpressionsController {
   }
 
   @Delete(':id')
-  remove(@Req() req: Request & { user: AuthUser }, @Param('id') id: string) {
-    return this.favoriteExpressionsService.remove(req.user.id, id);
+  @HttpCode(204)
+  async remove(@Req() req: Request & { user: AuthUser }, @Param('id') id: string) {
+    await this.favoriteExpressionsService.remove(req.user.id, id);
+  }
+
+  @Patch(':id/audio')
+  updateAudio(
+    @Req() req: Request & { user: AuthUser },
+    @Param('id') id: string,
+    @Body() body: { audioUrl: string },
+  ) {
+    return this.favoriteExpressionsService.updateAudioUrl(req.user.id, id, body.audioUrl);
   }
 }

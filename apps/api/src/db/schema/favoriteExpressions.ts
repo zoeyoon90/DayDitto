@@ -16,6 +16,7 @@ export const favoriteExpressions = pgTable(
     koreanText: text('korean_text').notNull(), // 원문 한국어 표현
     englishText: text('english_text').notNull(), // 번역된 영어 표현
     memo: text('memo'), // 유저 메모 (nullable)
+    audioUrl: text('audio_url'), // TTS 오디오 URL (nullable)
     createdAt: timestamp('created_at', { withTimezone: true })
       .notNull()
       .defaultNow(),

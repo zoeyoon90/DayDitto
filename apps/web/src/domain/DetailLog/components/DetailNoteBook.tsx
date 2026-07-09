@@ -1,5 +1,7 @@
 'use client'
 
+import { useState, useEffect } from 'react'
+
 const notebookStyle = {
   backgroundColor: '#fdfaf4',
   backgroundImage: `
@@ -24,17 +26,71 @@ const notebookStyle = {
 }
 
 interface Props {
+  logId: string
   koreanContent: string
   englishContent: string | null
+  lineAudioUrls: (string | null)[]
   loadingIndex: number | null
   playingIndex: number | null
   onPlayLine: (index: number) => void
   font?: string
 }
 
-export default function DetailNoteBook({ koreanContent, englishContent, loadingIndex, playingIndex, onPlayLine, font }: Props) {
+export default function DetailNoteBook({ logId, koreanContent, englishContent, lineAudioUrls, loadingIndex, playingIndex, onPlayLine, font }: Props) {
   const koreanLines = koreanContent.split('\n')
   const englishLines = englishContent?.split('\n') ?? []
+  const [savedMap, setSavedMap] = useState<Map<number, string>>(new Map()) // index → favoriteId
+  const [savingIndex, setSavingIndex] = useState<number | null>(null)
+
+  useEffect(() => {
+    fetch(`/api/favorites?dailyLogId=${logId}`)
+      .then((r) => (r.ok ? r.json() : []))
+      .then((data: { id: string; koreanText: string }[]) => {
+        const map = new Map<number, string>()
+        data.forEach((fav) => {
+          const idx = koreanLines.indexOf(fav.koreanText)
+          if (idx !== -1) map.set(idx, fav.id)
+        })
+        setSavedMap(map)
+      })
+      .catch(() => {})
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [logId])
+
+  const handleFavorite = async (index: number) => {
+    if (savingIndex !== null) return
+    const korean = koreanLines[index]
+    const english = englishLines[index]
+    if (!korean || !english) return
+
+    setSavingIndex(index)
+    const existingId = savedMap.get(index)
+
+    if (existingId) {
+      try {
+        const res = await fetch(`/api/favorites/${existingId}`, { method: 'DELETE' })
+        if (res.ok) {
+          setSavedMap((prev) => { const next = new Map(prev); next.delete(index); return next })
+        }
+      } finally {
+        setSavingIndex(null)
+      }
+    } else {
+      try {
+        const res = await fetch('/api/favorites', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ dailyLogId: logId, koreanText: korean, englishText: english, audioUrl: lineAudioUrls[index] ?? undefined }),
+        })
+        if (res.ok) {
+          const data = await res.json() as { id: string }
+          setSavedMap((prev) => new Map(prev).set(index, data.id))
+        }
+      } finally {
+        setSavingIndex(null)
+      }
+    }
+  }
 
   return (
     <div
@@ -51,9 +107,17 @@ export default function DetailNoteBook({ koreanContent, englishContent, loadingI
               <div className="flex items-center h-6.5 pl-6.25 pr-2 bg-main">
                 <p className="text-xs text-card leading-6 flex-1 whitespace-nowrap">{englishLines[i]}</p>
                 <button
+                  onClick={() => handleFavorite(i)}
+                  disabled={savingIndex !== null}
+                  className="shrink-0 w-6 h-6 flex items-center justify-center rounded text-foreground hover:text-yellow-400 transition-colors disabled:opacity-60"
+                  aria-label="즐겨찾기"
+                >
+                  <span className="text-xs">{savedMap.has(i) ? '★' : savingIndex === i ? '...' : '☆'}</span>
+                </button>
+                <button
                   onClick={() => onPlayLine(i)}
                   disabled={loadingIndex !== null && loadingIndex !== i}
-                  className="shrink-0 w-6 h-6 flex items-center justify-center rounded text-foreground/40 hover:text-accent transition-colors disabled:opacity-30"
+                  className="shrink-0 w-6 h-6 flex items-center justify-center rounded text-foreground hover:text-accent transition-colors disabled:opacity-30"
                   aria-label="발음 듣기"
                 >
                   {loadingIndex === i ? (
