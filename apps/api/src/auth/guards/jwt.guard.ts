@@ -6,26 +6,16 @@ import {
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Request } from 'express';
-import jwksClient from 'jwks-rsa';
-import * as jwt from 'jsonwebtoken';
-
-interface SupabaseJwtPayload extends jwt.JwtPayload {
-  email: string;
-  user_metadata?: { nickname?: string };
-  app_metadata?: { provider?: string };
-}
+import { createClient } from '@supabase/supabase-js';
 
 @Injectable()
 export class JwtGuard implements CanActivate {
-  private readonly jwksClient: jwksClient.JwksClient;
+  private readonly supabaseUrl: string;
+  private readonly supabaseServiceKey: string;
 
   constructor(configService: ConfigService) {
-    this.jwksClient = jwksClient({
-      jwksUri: `${configService.get<string>('SUPABASE_URL')}/auth/v1/.well-known/jwks.json`,
-      cache: true,
-      rateLimit: true,
-      jwksRequestsPerMinute: 5,
-    });
+    this.supabaseUrl = configService.get<string>('SUPABASE_URL')!;
+    this.supabaseServiceKey = configService.get<string>('SUPABASE_SERVICE_ROLE_KEY')!;
   }
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
@@ -34,31 +24,19 @@ export class JwtGuard implements CanActivate {
 
     if (!token) throw new UnauthorizedException();
 
-    try {
-      const decoded = jwt.decode(token, { complete: true });
-      if (!decoded || typeof decoded === 'string') throw new Error();
+    const adminSupabase = createClient(this.supabaseUrl, this.supabaseServiceKey);
+    const { data: { user }, error } = await adminSupabase.auth.getUser(token);
 
-      const signingKey = await this.jwksClient.getSigningKey(
-        decoded.header.kid,
-      );
-      const publicKey = signingKey.getPublicKey();
+    if (error || !user) throw new UnauthorizedException();
 
-      const payload = jwt.verify(token, publicKey, {
-        algorithms: ['ES256'],
-        audience: 'authenticated',
-      }) as SupabaseJwtPayload;
+    (request as Request & { user: unknown }).user = {
+      id: user.id,
+      email: user.email!,
+      nickname: (user.user_metadata as { nickname?: string })?.nickname,
+      provider: (user.app_metadata as { provider?: string })?.provider ?? 'email',
+    };
 
-      (request as Request & { user: unknown }).user = {
-        id: payload.sub,
-        email: payload.email,
-        nickname: payload.user_metadata?.nickname,
-        provider: payload.app_metadata?.provider ?? 'email',
-      };
-
-      return true;
-    } catch {
-      throw new UnauthorizedException();
-    }
+    return true;
   }
 
   private extractToken(request: Request): string | null {

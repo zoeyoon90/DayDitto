@@ -4,7 +4,7 @@
   import { zodResolver } from '@hookform/resolvers/zod'
   import { useRouter } from 'next/navigation'
   import { loginSchema, type LoginFormData } from '@/types/auth'
-  import { login } from '@/lib/auth'
+  import { createClient } from '@/lib/supabase/client'
   import Input from '@/components/Input/Input'
   import { Button } from '@/components/Button/Button'
 
@@ -20,7 +20,11 @@
     })
 
     const onSubmit = async (data: LoginFormData) => {
-      const { error } = await login(data)
+      const supabase = createClient()
+      const { error } = await supabase.auth.signInWithPassword({
+        email: data.email,
+        password: data.password,
+      })
       if (error) {
         setError('root', { message: '이메일 또는 비밀번호가 올바르지 않습니다' })
         return

@@ -16,7 +16,7 @@ export default function CalenderContainer({ initialYear, initialMonth }: Calende
   const [year, setYear] = useState(initialYear)
   const [month, setMonth] = useState(initialMonth)
 
-  const { data, isLoading } = useQuery({
+  const { data, isLoading, isError } = useQuery({
     queryKey: queryKeys.calendar(year, month),
     queryFn: () => fetchMonthlyLogs(year, month),
   })
@@ -41,7 +41,9 @@ export default function CalenderContainer({ initialYear, initialMonth }: Calende
         onPrev={handlePrev}
         onNext={handleNext}
       />
-      {isLoading || !data ? (
+      {isError ? (
+        <div className="flex items-center justify-center h-64 text-foreground/40">불러오기 실패</div>
+      ) : isLoading || !data ? (
         <div className="flex items-center justify-center h-64 text-foreground/40">불러오는 중...</div>
       ) : (
         <CalenderGrid
