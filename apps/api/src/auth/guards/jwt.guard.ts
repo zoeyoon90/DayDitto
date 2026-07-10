@@ -7,6 +7,9 @@ import {
 import { ConfigService } from '@nestjs/config';
 import { Request } from 'express';
 import { createClient } from '@supabase/supabase-js';
+import { eq, sql } from 'drizzle-orm';
+import { db } from '../../db';
+import { users, loginLogs } from '../../db/schema';
 
 @Injectable()
 export class JwtGuard implements CanActivate {
@@ -37,13 +40,41 @@ export class JwtGuard implements CanActivate {
 
     if (error || !user) throw new UnauthorizedException();
 
+    // DB에서 role 조회
+    const [dbUser] = await db
+      .select({ role: users.role })
+      .from(users)
+      .where(eq(users.id, user.id));
+
     (request as Request & { user: unknown }).user = {
       id: user.id,
       email: user.email!,
       nickname: (user.user_metadata as { nickname?: string })?.nickname,
       provider:
         (user.app_metadata as { provider?: string })?.provider ?? 'email',
+      role: dbUser?.role ?? 'member',
     };
+
+    // KST 기준 오늘 login_log INSERT (atomic)
+    // UNIQUE(user_id, date) + ON CONFLICT DO NOTHING → 병렬 요청 race condition 원천 차단
+    const [inserted] = await db
+      .insert(loginLogs)
+      .values({
+        userId: user.id,
+        date: sql`(NOW() AT TIME ZONE 'Asia/Seoul')::date`,
+      })
+      .onConflictDoNothing()
+      .returning({ id: loginLogs.id });
+
+    if (inserted) {
+      await db
+        .update(users)
+        .set({
+          lastLoginAt: new Date(),
+          loginCount: sql`login_count + 1`,
+        })
+        .where(eq(users.id, user.id));
+    }
 
     return true;
   }
