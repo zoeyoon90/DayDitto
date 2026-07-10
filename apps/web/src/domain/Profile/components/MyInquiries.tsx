@@ -1,15 +1,10 @@
 'use client';
 
-import { useQuery } from '@tanstack/react-query';
 import Link from 'next/link';
-import { fetchMyInquiries } from '@/api/inquiry.api';
-import { queryKeys } from '@/lib/queryKeys';
+import { useMyInquiries } from '@/hooks/inquiry/useMyInquiries';
 
 export default function MyInquiries() {
-  const { data: inquiries = [], isLoading } = useQuery({
-    queryKey: queryKeys.inquiries(),
-    queryFn: () => fetchMyInquiries().catch(() => []),
-  });
+  const { inquiries, isLoading } = useMyInquiries()
 
   return (
     <div className="flex flex-col gap-4">

@@ -1,16 +1,11 @@
 'use client'
 
-import { useQuery } from '@tanstack/react-query'
 import Link from 'next/link'
-import { fetchInquiryDetail } from '@/api/inquiry.api'
-import { queryKeys } from '@/lib/queryKeys'
+import { useInquiryDetail } from '@/hooks/inquiry/useInquiryDetail'
 import { Button } from '@/components/Button/Button'
 
 export default function InquiryDetailContainer({ id }: { id: string }) {
-  const { data: inquiry, isLoading } = useQuery({
-    queryKey: queryKeys.inquiry(id),
-    queryFn: () => fetchInquiryDetail(id),
-  })
+  const { inquiry, isLoading } = useInquiryDetail(id)
 
   if (isLoading) {
     return <p className="text-foreground/40 text-sm text-center py-12">불러오는 중...</p>
@@ -23,7 +18,7 @@ export default function InquiryDetailContainer({ id }: { id: string }) {
   return (
     <div className="max-w-2xl mx-auto px-4 py-8">
       <div className="mb-6">
-        <Link href="/inquiry">
+        <Link href="/profile">
           <Button variant="neutral" size="sm">← 목록으로</Button>
         </Link>
       </div>
