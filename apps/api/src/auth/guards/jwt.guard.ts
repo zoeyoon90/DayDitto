@@ -47,13 +47,9 @@ export class JwtGuard implements CanActivate {
       .where(eq(users.id, user.id));
 
     if (!dbUser) {
-      const provider =
-        ((user.app_metadata as { provider?: string })?.provider ?? 'email') as
-          | 'email'
-          | 'kakao'
-          | 'google';
-      const providerId =
-        (user.identities?.[0]?.id as string | undefined) ?? user.id;
+      const provider = ((user.app_metadata as { provider?: string })
+        ?.provider ?? 'email') as 'email' | 'kakao' | 'google';
+      const providerId = user.identities?.[0]?.id ?? user.id;
       const nickname = (user.user_metadata as { nickname?: string })?.nickname;
 
       await db

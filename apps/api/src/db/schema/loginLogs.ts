@@ -1,4 +1,11 @@
-import { pgTable, uuid, date, timestamp, unique, index } from 'drizzle-orm/pg-core';
+import {
+  pgTable,
+  uuid,
+  date,
+  timestamp,
+  unique,
+  index,
+} from 'drizzle-orm/pg-core';
 import { users } from './users';
 
 export const loginLogs = pgTable(

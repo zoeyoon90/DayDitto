@@ -1,7 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { sql, eq, desc } from 'drizzle-orm';
 import { db } from '../db';
-import { users, inquiries } from '../db/schema';
+import { inquiries } from '../db/schema';
 
 @Injectable()
 export class AdminService {
@@ -77,42 +77,48 @@ export class AdminService {
   }
 
   async getStats() {
-    const [dauResult, wauResult, mauResult, aiDayResult, aiWeekResult, aiMonthResult] =
-      await Promise.all([
-        // DAU: 오늘 KST 기준 (UNIQUE constraint로 COUNT(*) = 활성 유저 수)
-        db.execute(sql`
+    const [
+      dauResult,
+      wauResult,
+      mauResult,
+      aiDayResult,
+      aiWeekResult,
+      aiMonthResult,
+    ] = await Promise.all([
+      // DAU: 오늘 KST 기준 (UNIQUE constraint로 COUNT(*) = 활성 유저 수)
+      db.execute(sql`
           SELECT COUNT(*)::int AS count FROM login_logs
           WHERE date = (NOW() AT TIME ZONE 'Asia/Seoul')::date
         `),
-        // WAU: 최근 7일
-        db.execute(sql`
+      // WAU: 최근 7일
+      db.execute(sql`
           SELECT COUNT(DISTINCT user_id)::int AS count FROM login_logs
           WHERE date >= (NOW() AT TIME ZONE 'Asia/Seoul')::date - 6
         `),
-        // MAU: 최근 30일
-        db.execute(sql`
+      // MAU: 최근 30일
+      db.execute(sql`
           SELECT COUNT(DISTINCT user_id)::int AS count FROM login_logs
           WHERE date >= (NOW() AT TIME ZONE 'Asia/Seoul')::date - 29
         `),
-        // 일별 AI 호출
-        db.execute(sql`
+      // 일별 AI 호출
+      db.execute(sql`
           SELECT call_type, COUNT(*)::int AS count FROM ai_usage_logs
           WHERE created_at >= DATE_TRUNC('day', NOW() AT TIME ZONE 'Asia/Seoul') AT TIME ZONE 'Asia/Seoul'
           GROUP BY call_type
         `),
-        // 주별 AI 호출
-        db.execute(sql`
+      // 주별 AI 호출
+      db.execute(sql`
           SELECT call_type, COUNT(*)::int AS count FROM ai_usage_logs
           WHERE created_at >= NOW() - INTERVAL '7 days'
           GROUP BY call_type
         `),
-        // 월별 AI 호출
-        db.execute(sql`
+      // 월별 AI 호출
+      db.execute(sql`
           SELECT call_type, COUNT(*)::int AS count FROM ai_usage_logs
           WHERE created_at >= NOW() - INTERVAL '30 days'
           GROUP BY call_type
         `),
-      ]);
+    ]);
 
     const toMap = (rows: { call_type: string; count: number }[]) =>
       Object.fromEntries(rows.map((r) => [r.call_type, r.count]));
@@ -121,9 +127,15 @@ export class AdminService {
       dau: (dauResult[0] as { count: number }).count,
       wau: (wauResult[0] as { count: number }).count,
       mau: (mauResult[0] as { count: number }).count,
-      aiDay: toMap(aiDayResult as unknown as { call_type: string; count: number }[]),
-      aiWeek: toMap(aiWeekResult as unknown as { call_type: string; count: number }[]),
-      aiMonth: toMap(aiMonthResult as unknown as { call_type: string; count: number }[]),
+      aiDay: toMap(
+        aiDayResult as unknown as { call_type: string; count: number }[],
+      ),
+      aiWeek: toMap(
+        aiWeekResult as unknown as { call_type: string; count: number }[],
+      ),
+      aiMonth: toMap(
+        aiMonthResult as unknown as { call_type: string; count: number }[],
+      ),
     };
   }
 
