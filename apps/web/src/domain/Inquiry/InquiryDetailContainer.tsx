@@ -34,6 +34,21 @@ export default function InquiryDetailContainer({ id }: { id: string }) {
         <hr className="border-border mb-4" />
         <p className="text-sm text-text whitespace-pre-wrap leading-relaxed">{inquiry.content}</p>
       </div>
+      {inquiry.adminReply && (
+        <div className="mt-4 border-2 border-border rounded-base bg-card shadow-shadow p-6">
+          <p className="text-xs font-semibold text-accent mb-2">관리자 답변</p>
+          {inquiry.repliedAt && (
+            <p className="text-xs text-foreground/40 mb-2">
+              {new Date(inquiry.repliedAt).toLocaleDateString('ko-KR', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric',
+              })}
+            </p>
+          )}
+          <p className="text-sm text-text whitespace-pre-wrap leading-relaxed">{inquiry.adminReply}</p>
+        </div>
+      )}
     </div>
   )
 }
