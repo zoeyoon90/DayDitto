@@ -1,0 +1,24 @@
+import Link from 'next/link';
+
+export default function Footer() {
+  return (
+    <footer className="bg-main text-foreground fixed bottom-0 left-0 right-0 w-full px-8 py-8">
+      <div className="flex items-center justify-between">
+        <span className="font-[family-name:var(--font-do-hyeon)] text-sm">
+          © 2026
+        </span>
+        <span className="font-[family-name:var(--font-yeongwol)] text-xl">
+          DayDitto
+        </span>
+        <div className="flex gap-4 font-[family-name:var(--font-do-hyeon)] text-sm">
+          <Link href="/privacy-policy" className="hover:underline">
+            Privacy Policy
+          </Link>
+          <Link href="/qna" className="hover:underline">
+            문의 게시판
+          </Link>
+        </div>
+      </div>
+    </footer>
+  );
+}
