@@ -19,7 +19,7 @@ export default function NavBar() {
       {/* 메뉴 */}
       <div className="flex gap-2 sm:gap-6">
         <Button asChild className='bg-card h-7 w-12 text-xs sm:h-8 sm:w-16 sm:text-sm'>
-          <Link href="/calender">캘린더</Link>
+          <Link href="/calendar">캘린더</Link>
         </Button>
         {todayWritten ? (
           <Button disabled className='bg-main/40 h-7 w-12 text-xs sm:h-8 sm:w-16 sm:text-sm cursor-not-allowed'>

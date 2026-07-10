@@ -18,13 +18,11 @@ export async function GET(request: NextRequest) {
           },
           setAll(cookiesToSet) {
             cookiesToSet.forEach(({ name, value, options }) => {
-              // eslint-disable-next-line @typescript-eslint/no-unused-vars
-              const { maxAge, expires, ...sessionOptions } = options ?? {}
               if (!value) {
-                cookieStore.set(name, '', { ...sessionOptions, maxAge: 0 })
+                cookieStore.set(name, '', { ...(options ?? {}), maxAge: 0 })
               } else {
                 cookieStore.set(name, value, {
-                  ...sessionOptions,
+                  ...(options ?? {}),
                   httpOnly: true,
                   sameSite: 'lax',
                   secure: process.env.NODE_ENV === 'production',
@@ -38,7 +36,7 @@ export async function GET(request: NextRequest) {
 
     const { error } = await supabase.auth.exchangeCodeForSession(code)
     if (!error) {
-      return NextResponse.redirect(`${origin}/calender`)
+      return NextResponse.redirect(`${origin}/calendar`)
     }
   }
 

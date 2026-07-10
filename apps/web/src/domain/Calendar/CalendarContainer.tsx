@@ -3,16 +3,16 @@
 import { useQuery } from '@tanstack/react-query'
 import { queryKeys } from '@/lib/queryKeys'
 import { fetchMonthlyLogs } from '@/api/logs.api'
-import CalenderHeader from './components/CalenderHeader'
-import CalenderGrid from './components/CalenderGrid'
+import CalendarHeader from './components/CalendarHeader'
+import CalendarGrid from './components/CalendarGrid'
 import { useMonthNavigation } from '@/hooks/calendar/useMonthNavigation'
 
-interface CalenderContainerProps {
+interface CalendarContainerProps {
   initialYear: number
   initialMonth: number
 }
 
-export default function CalenderContainer({ initialYear, initialMonth }: CalenderContainerProps) {
+export default function CalendarContainer({ initialYear, initialMonth }: CalendarContainerProps) {
   const { year, month, handlePrev, handleNext } = useMonthNavigation(initialYear, initialMonth)
 
   const { data, isLoading, isError } = useQuery({
@@ -22,7 +22,7 @@ export default function CalenderContainer({ initialYear, initialMonth }: Calende
 
   return (
     <div className="bg-main/15 border-2 border-border shadow-shadow rounded-base p-2 sm:p-4 max-w-153.5 w-full mx-auto">
-      <CalenderHeader
+      <CalendarHeader
         year={year}
         month={month}
         onPrev={handlePrev}
@@ -33,7 +33,7 @@ export default function CalenderContainer({ initialYear, initialMonth }: Calende
       ) : isLoading || !data ? (
         <div className="flex items-center justify-center h-64 text-foreground/40">불러오는 중...</div>
       ) : (
-        <CalenderGrid
+        <CalendarGrid
           year={year}
           month={month}
           logs={data.logs}

@@ -1,6 +1,6 @@
 import { Button } from '@/components/Button/Button'
 
-interface CalenderHeaderProps {
+interface CalendarHeaderProps {
   year: number
   month: number
   onPrev: () => void
@@ -12,7 +12,7 @@ const MONTH_NAMES = [
   '7월', '8월', '9월', '10월', '11월', '12월',
 ]
 
-export default function CalenderHeader({ year, month, onPrev, onNext }: CalenderHeaderProps) {
+export default function CalendarHeader({ year, month, onPrev, onNext }: CalendarHeaderProps) {
   return (
     <div className="flex items-center justify-between mb-4">
       <Button variant="noShadow" size="icon" onClick={onPrev} className="text-base sm:text-xl">
