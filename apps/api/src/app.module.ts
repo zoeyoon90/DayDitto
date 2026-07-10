@@ -10,6 +10,7 @@ import { TtsModule } from './tts/tts.module';
 import { GifModule } from './gif/gif.module';
 import { UploadModule } from './upload/upload.module';
 import { UsersModule } from './users/users.module';
+import { InquiriesModule } from './inquiries/inquiries.module';
 
 @Module({
   imports: [
@@ -22,6 +23,7 @@ import { UsersModule } from './users/users.module';
     GifModule,
     UploadModule,
     UsersModule,
+    InquiriesModule,
   ],
   controllers: [AppController],
   providers: [AppService],

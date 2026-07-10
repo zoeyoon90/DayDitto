@@ -14,8 +14,8 @@ export default function Footer() {
           <Link href="/privacy-policy" className="hover:underline">
             Privacy Policy
           </Link>
-          <Link href="/qna" className="hover:underline">
-            문의 게시판
+          <Link href="/inquiry" className="hover:underline">
+            1:1 문의
           </Link>
         </div>
       </div>
