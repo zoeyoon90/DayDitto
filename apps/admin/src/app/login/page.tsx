@@ -3,7 +3,6 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { adminLogin } from '@/lib/auth';
-import { fetchAdminMe } from '@/api/admin.api';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -24,18 +23,9 @@ export default function LoginPage() {
         return;
       }
 
-      // role 확인
-      try {
-        await fetchAdminMe();
-        router.push('/users');
-      } catch (err: unknown) {
-        const apiErr = err as { status?: number };
-        if (apiErr.status === 403) {
-          setError('관리자 권한이 없는 계정입니다.');
-        } else {
-          setError('로그인 중 오류가 발생했습니다.');
-        }
-      }
+      // role 체크는 dashboard layout.tsx 서버사이드 verifyAdmin()이 처리
+      // non-admin → /login redirect
+      router.push('/users');
     } finally {
       setIsLoading(false);
     }

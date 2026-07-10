@@ -1,10 +1,10 @@
 import { useQuery } from '@tanstack/react-query';
-import { fetchAdminStats, fetchAdminStatsTrend } from '@/api/admin.api';
+import { fetchStatsAction, fetchStatsTrendAction } from '@/actions/admin.actions';
 
 export function useAdminStats() {
   const { data: stats, isLoading } = useQuery({
     queryKey: ['admin', 'stats'],
-    queryFn: fetchAdminStats,
+    queryFn: fetchStatsAction,
   });
   return { stats, isLoading };
 }
@@ -12,7 +12,7 @@ export function useAdminStats() {
 export function useAdminStatsTrend() {
   const { data: trend, isLoading } = useQuery({
     queryKey: ['admin', 'stats', 'trend'],
-    queryFn: fetchAdminStatsTrend,
+    queryFn: fetchStatsTrendAction,
   });
   return { trend, isLoading };
 }
