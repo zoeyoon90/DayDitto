@@ -1,4 +1,12 @@
-import { Body, Controller, Get, Param, Post, Req, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  Post,
+  Req,
+  UseGuards,
+} from '@nestjs/common';
 import { Request } from 'express';
 import { JwtGuard } from '../auth/guards/jwt.guard';
 import { InquiriesService } from './inquiries.service';
@@ -30,10 +38,7 @@ export class InquiriesController {
   }
 
   @Get(':id')
-  findOne(
-    @Req() req: Request & { user: AuthUser },
-    @Param('id') id: string,
-  ) {
+  findOne(@Req() req: Request & { user: AuthUser }, @Param('id') id: string) {
     return this.inquiriesService.findOne(req.user.id, id);
   }
 }
