@@ -4,7 +4,7 @@ import { MonthlyLog } from '@/types/calendar';
 import { formatDateKey } from '@/lib/calendar';
 import { cn } from '@/lib/utils';
 
-interface CalenderCellProps {
+interface CalendarCellProps {
   date: Date | null;
   log: MonthlyLog | null;
   isToday: boolean;
@@ -12,13 +12,13 @@ interface CalenderCellProps {
   isSaturday: boolean;
 }
 
-export default function CalenderCell({
+export default function CalendarCell({
   date,
   log,
   isToday,
   isSunday,
   isSaturday,
-}: CalenderCellProps) {
+}: CalendarCellProps) {
   if (!date) {
     return <div className="aspect-square" />;
   }

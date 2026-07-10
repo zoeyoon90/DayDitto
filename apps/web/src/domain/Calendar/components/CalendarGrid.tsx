@@ -4,7 +4,7 @@ import {
   formatDateKey,
   getTodayInTimezone,
 } from '@/lib/calendar';
-import CalenderCell from './CalenderCell';
+import CalendarCell from './CalendarCell';
 
 const DAY_LABELS = [
   { label: '일', className: 'text-red-500' },
@@ -16,19 +16,19 @@ const DAY_LABELS = [
   { label: '토', className: 'text-blue-500' },
 ];
 
-interface CalenderGridProps {
+interface CalendarGridProps {
   year: number;
   month: number;
   logs: MonthlyLog[];
   timezone: string;
 }
 
-export default function CalenderGrid({
+export default function CalendarGrid({
   year,
   month,
   logs,
   timezone,
-}: CalenderGridProps) {
+}: CalendarGridProps) {
   const grid = buildCalendarGrid(year, month);
   const todayStr = getTodayInTimezone(timezone);
 
@@ -54,7 +54,7 @@ export default function CalenderGrid({
         const isToday = dateKey === todayStr;
 
         return (
-          <CalenderCell
+          <CalendarCell
             key={idx}
             date={date}
             log={log}

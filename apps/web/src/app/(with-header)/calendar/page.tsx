@@ -1,13 +1,13 @@
 import { dehydrate, HydrationBoundary, QueryClient } from '@tanstack/react-query'
 import { queryKeys } from '@/lib/queryKeys'
 import { fetchMonthlyLogsServer } from '@/api/logs.server'
-import CalenderContainer from '@/domain/Calender/CalenderContainer'
+import CalendarContainer from '@/domain/Calendar/CalendarContainer'
 
-interface CalenderPageProps {
+interface CalendarPageProps {
   searchParams: Promise<{ year?: string; month?: string }>
 }
 
-export default async function CalenderPage({ searchParams }: CalenderPageProps) {
+export default async function CalendarPage({ searchParams }: CalendarPageProps) {
   const params = await searchParams
   const now = new Date()
   const year = params.year ? parseInt(params.year, 10) : now.getFullYear()
@@ -26,7 +26,7 @@ export default async function CalenderPage({ searchParams }: CalenderPageProps) 
   return (
     <div className="flex flex-col items-center py-4 px-2 sm:py-6 sm:px-4">
       <HydrationBoundary state={dehydrate(queryClient)}>
-        <CalenderContainer initialYear={year} initialMonth={month} />
+        <CalendarContainer initialYear={year} initialMonth={month} />
       </HydrationBoundary>
     </div>
   )
