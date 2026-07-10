@@ -4,3 +4,4 @@ export * from './aiUsageLogs';
 export * from './favoriteExpressions';
 export * from './relations';
 export * from './inquiries';
+export * from './loginLogs';

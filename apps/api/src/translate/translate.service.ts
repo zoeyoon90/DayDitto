@@ -1,6 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import Anthropic from '@anthropic-ai/sdk';
+import { db } from '../db';
+import { aiUsageLogs } from '../db/schema';
 
 @Injectable()
 export class TranslateService {
@@ -12,7 +14,7 @@ export class TranslateService {
     });
   }
 
-  async translate(lines: string[]): Promise<string[]> {
+  async translate(userId: string, lines: string[]): Promise<string[]> {
     const nonEmpty = lines.filter((l) => l.trim());
     if (!nonEmpty.length) return lines.map(() => '');
 
@@ -28,6 +30,13 @@ Korean sentences:
 ${nonEmpty.map((l, i) => `${i + 1}. ${l}`).join('\n')}`,
         },
       ],
+    });
+
+    await db.insert(aiUsageLogs).values({
+      userId,
+      callType: 'translation',
+      model: 'claude-haiku-4-5-20251001',
+      tokensUsed: message.usage.input_tokens + message.usage.output_tokens,
     });
 
     const text = (message.content[0] as { text: string }).text;

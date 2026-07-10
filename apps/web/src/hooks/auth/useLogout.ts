@@ -1,12 +1,14 @@
 import { useRouter } from 'next/navigation'
-import { createClient } from '@/lib/supabase/client'
+import { useQueryClient } from '@tanstack/react-query'
+import { signOut } from '@/lib/auth'
 
 export function useLogout() {
   const router = useRouter()
+  const queryClient = useQueryClient()
 
   const handleLogout = async () => {
-    const supabase = createClient()
-    await supabase.auth.signOut()
+    queryClient.clear()
+    await signOut()
     router.push('/login')
   }
 

@@ -3,6 +3,8 @@ import { ConfigService } from '@nestjs/config';
 import { createClient } from '@supabase/supabase-js';
 import { DailyLogsService } from '../daily-logs/daily-logs.service';
 import { FavoriteExpressionsService } from '../favorite-expressions/favorite-expressions.service';
+import { db } from '../db';
+import { aiUsageLogs } from '../db/schema';
 
 @Injectable()
 export class TtsService {
@@ -68,6 +70,13 @@ export class TtsService {
       audio,
     );
 
+    await db.insert(aiUsageLogs).values({
+      userId,
+      dailyLogId: logId,
+      callType: 'tts',
+      model: 'en-US-Neural2-C',
+    });
+
     const log = await this.dailyLogsService.getLogById(userId, logId);
     const updatedUrls = [
       ...((log?.lineAudioUrls as (string | null)[] | null) ?? []),
@@ -86,7 +95,17 @@ export class TtsService {
     const lineAudioUrls = await Promise.all(
       lines.map(async (text, index) => {
         const audio = await this.synthesize(text);
-        return this.uploadAudio(`${userId}/${logId}/line-${index}.mp3`, audio);
+        const url = await this.uploadAudio(
+          `${userId}/${logId}/line-${index}.mp3`,
+          audio,
+        );
+        await db.insert(aiUsageLogs).values({
+          userId,
+          dailyLogId: logId,
+          callType: 'tts',
+          model: 'en-US-Neural2-C',
+        });
+        return url;
       }),
     );
 
@@ -104,6 +123,12 @@ export class TtsService {
       `${userId}/favorites/${favoriteId}.mp3`,
       audio,
     );
+
+    await db.insert(aiUsageLogs).values({
+      userId,
+      callType: 'tts',
+      model: 'en-US-Neural2-C',
+    });
 
     await this.favoriteExpressionsService.updateAudioUrl(
       userId,

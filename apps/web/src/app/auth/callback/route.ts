@@ -17,9 +17,20 @@ export async function GET(request: NextRequest) {
             return cookieStore.getAll()
           },
           setAll(cookiesToSet) {
-            cookiesToSet.forEach(({ name, value, options }) =>
-              cookieStore.set(name, value, options),
-            )
+            cookiesToSet.forEach(({ name, value, options }) => {
+              // eslint-disable-next-line @typescript-eslint/no-unused-vars
+              const { maxAge, expires, ...sessionOptions } = options ?? {}
+              if (!value) {
+                cookieStore.set(name, '', { ...sessionOptions, maxAge: 0 })
+              } else {
+                cookieStore.set(name, value, {
+                  ...sessionOptions,
+                  httpOnly: true,
+                  sameSite: 'lax',
+                  secure: process.env.NODE_ENV === 'production',
+                })
+              }
+            })
           },
         },
       },

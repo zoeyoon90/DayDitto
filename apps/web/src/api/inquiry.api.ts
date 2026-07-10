@@ -8,6 +8,9 @@ export interface Inquiry {
   content: string
   createdAt: string
   updatedAt: string
+  adminReply: string | null
+  status: 'pending' | 'replied'
+  repliedAt: string | null
 }
 
 export interface InquiryListItem {
