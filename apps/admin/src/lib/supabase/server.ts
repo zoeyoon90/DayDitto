@@ -14,14 +14,17 @@ export const createClient = async () => {
         },
         setAll(cookiesToSet) {
           try {
-            cookiesToSet.forEach(({ name, value, options }) =>
+            cookiesToSet.forEach(({ name, value, options }) => {
+              // maxAge/expires 제거 → 세션 쿠키 → 브라우저 닫으면 세션 만료
+              // eslint-disable-next-line @typescript-eslint/no-unused-vars
+              const { maxAge, expires, ...sessionOptions } = options ?? {};
               cookieStore.set(name, value, {
-                ...options,
+                ...sessionOptions,
                 httpOnly: true,
                 sameSite: 'lax',
                 secure: process.env.NODE_ENV === 'production',
-              }),
-            );
+              });
+            });
           } catch {
             // Server Component에서 호출 시 무시
           }
