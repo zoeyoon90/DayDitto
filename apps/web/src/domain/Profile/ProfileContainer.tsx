@@ -1,27 +1,16 @@
 'use client';
 
-import { useState } from 'react';
 import { useAuth } from '@/providers/AuthProvider';
 import ProfileNav from './components/ProfileNav';
 import ProfileInfo from './components/ProfileInfo';
 import Bookmarks from './components/Bookmarks';
 import MyInquiries from './components/MyInquiries';
 import DeleteAccountModal from './components/DeleteAccountModal';
-
-type Tab = 'profile' | 'bookmarks' | 'inquiries' | 'delete';
+import { useProfileTabs } from '@/hooks/profile/useProfileTabs';
 
 export default function ProfileContainer() {
   const user = useAuth();
-  const [activeTab, setActiveTab] = useState<Tab>('profile');
-  const [showDeleteModal, setShowDeleteModal] = useState(false);
-
-  const handleTabChange = (tab: Tab) => {
-    if (tab === 'delete') {
-      setShowDeleteModal(true);
-      return;
-    }
-    setActiveTab(tab);
-  };
+  const { activeTab, showDeleteModal, setShowDeleteModal, handleTabChange } = useProfileTabs();
 
   if (!user) {
     return <p className="text-foreground/40 text-sm">로그인이 필요합니다.</p>;

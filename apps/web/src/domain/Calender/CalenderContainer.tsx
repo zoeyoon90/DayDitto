@@ -1,11 +1,11 @@
 'use client'
 
-import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { queryKeys } from '@/lib/queryKeys'
 import { fetchMonthlyLogs } from '@/api/logs.api'
 import CalenderHeader from './components/CalenderHeader'
 import CalenderGrid from './components/CalenderGrid'
+import { useMonthNavigation } from '@/hooks/calendar/useMonthNavigation'
 
 interface CalenderContainerProps {
   initialYear: number
@@ -13,25 +13,12 @@ interface CalenderContainerProps {
 }
 
 export default function CalenderContainer({ initialYear, initialMonth }: CalenderContainerProps) {
-  const [year, setYear] = useState(initialYear)
-  const [month, setMonth] = useState(initialMonth)
+  const { year, month, handlePrev, handleNext } = useMonthNavigation(initialYear, initialMonth)
 
   const { data, isLoading, isError } = useQuery({
     queryKey: queryKeys.calendar(year, month),
     queryFn: () => fetchMonthlyLogs(year, month),
   })
-
-  const handlePrev = () => {
-    const d = new Date(year, month - 2, 1)
-    setYear(d.getFullYear())
-    setMonth(d.getMonth() + 1)
-  }
-
-  const handleNext = () => {
-    const d = new Date(year, month, 1)
-    setYear(d.getFullYear())
-    setMonth(d.getMonth() + 1)
-  }
 
   return (
     <div className="bg-main/15 border-2 border-border shadow-shadow rounded-base p-2 sm:p-4 max-w-153.5 w-full mx-auto">

@@ -1,31 +1,14 @@
 'use client';
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
 import { Button } from '@/components/Button/Button';
-import { deleteUser } from '@/api/user.api';
+import { useAccountDeletion } from '@/hooks/auth/useAccountDeletion';
 
 interface Props {
   onClose: () => void;
 }
 
 export default function DeleteAccountModal({ onClose }: Props) {
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const router = useRouter();
-
-  const handleDelete = async () => {
-    setLoading(true);
-    setError(null);
-    try {
-      await deleteUser();
-      router.push('/');
-    } catch (err) {
-      setError(err instanceof Error ? err.message : '회원탈퇴 중 오류가 발생했습니다.');
-    } finally {
-      setLoading(false);
-    }
-  };
+  const { loading, error, handleDelete } = useAccountDeletion();
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">

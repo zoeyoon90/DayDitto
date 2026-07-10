@@ -1,71 +1,21 @@
 'use client';
 
-import { useRef, useState } from 'react';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 import { queryKeys } from '@/lib/queryKeys';
-import { fetchFavorites, deleteFavorite, FavoriteExpression } from '@/api/favorites.api';
-import { ttsFavorite } from '@/api/tts.api';
+import { fetchFavorites } from '@/api/favorites.api';
+import { useFavoriteAudioPlayer } from '@/hooks/profile/useFavoriteAudioPlayer';
+import { useFavoriteMutations } from '@/hooks/profile/useFavoriteMutations';
 
 export default function Bookmarks() {
-  const queryClient = useQueryClient();
-  const [playingId, setPlayingId] = useState<string | null>(null);
-  const audioRef = useRef<HTMLAudioElement | null>(null);
-
   const { data: favorites = [], isLoading } = useQuery({
     queryKey: queryKeys.favorites(),
     queryFn: () => fetchFavorites().catch(() => []),
   });
 
-  const deleteMutation = useMutation({
-    mutationFn: (id: string) => deleteFavorite(id),
-    onSuccess: (_, id) => {
-      if (playingId === id) stopCurrent();
-      queryClient.invalidateQueries({ queryKey: queryKeys.favorites() });
-    },
+  const { playingId, ttsMutation, stopCurrent, handlePlay } = useFavoriteAudioPlayer();
+  const { deleteMutation } = useFavoriteMutations((id) => {
+    if (playingId === id) stopCurrent();
   });
-
-  const ttsMutation = useMutation({
-    mutationFn: ({ id, text }: { id: string; text: string }) =>
-      ttsFavorite({ favoriteId: id, text }),
-    onSuccess: (data, { id }) => {
-      queryClient.setQueryData(queryKeys.favorites(), (prev: FavoriteExpression[]) =>
-        prev.map((f) => (f.id === id ? { ...f, audioUrl: data.audioUrl } : f)),
-      );
-    },
-  });
-
-  const stopCurrent = () => {
-    if (audioRef.current) {
-      audioRef.current.pause();
-      audioRef.current.onended = null;
-      audioRef.current = null;
-    }
-    setPlayingId(null);
-  };
-
-  const handlePlay = async (item: FavoriteExpression) => {
-    if (playingId === item.id) {
-      stopCurrent();
-      return;
-    }
-    stopCurrent();
-
-    let audioUrl = item.audioUrl;
-
-    if (!audioUrl) {
-      const data = await ttsMutation.mutateAsync({ id: item.id, text: item.englishText });
-      audioUrl = data.audioUrl;
-    }
-
-    const audio = new Audio(audioUrl);
-    audioRef.current = audio;
-    audio.onended = () => {
-      setPlayingId(null);
-      audioRef.current = null;
-    };
-    audio.play();
-    setPlayingId(item.id);
-  };
 
   if (isLoading) {
     return <p className="text-sm text-foreground/50">불러오는 중...</p>;

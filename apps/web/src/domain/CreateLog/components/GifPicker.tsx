@@ -1,17 +1,9 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useRef, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import Image from 'next/image';
-import { fetchGifs } from '@/api/gif.api';
-
-type KlipyGif = {
-  id: number;
-  file?: {
-    hd?: { gif?: { url: string }; webp?: { url: string } };
-    sd?: { gif?: { url: string }; webp?: { url: string } };
-  };
-};
+import { useDebouncedGifSearch, KlipyGif } from '@/hooks/diary/useDebouncedGifSearch';
 
 type GifPickerProps = {
   anchorRect: DOMRect;
@@ -19,12 +11,12 @@ type GifPickerProps = {
   onClose: () => void;
 };
 
+const getUrl = (gif: KlipyGif) =>
+  gif.file?.hd?.gif?.url ?? gif.file?.sd?.gif?.url ?? '';
+
 export default function GifPicker({ anchorRect, onSelect, onClose }: GifPickerProps) {
-  const [query, setQuery] = useState('');
-  const [gifs, setGifs] = useState<KlipyGif[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { query, setQuery, gifs, loading } = useDebouncedGifSearch();
   const containerRef = useRef<HTMLDivElement>(null);
-  const debounceRef = useRef<ReturnType<typeof setTimeout>>(undefined);
 
   useEffect(() => {
     const handler = (e: MouseEvent) => {
@@ -35,29 +27,6 @@ export default function GifPicker({ anchorRect, onSelect, onClose }: GifPickerPr
     document.addEventListener('mousedown', handler);
     return () => document.removeEventListener('mousedown', handler);
   }, [onClose]);
-
-  useEffect(() => {
-    clearTimeout(debounceRef.current);
-    if (!query.trim()) {
-      loadGifs('');
-      return;
-    }
-    debounceRef.current = setTimeout(() => loadGifs(query), 300);
-    return () => clearTimeout(debounceRef.current);
-  }, [query]);
-
-  const loadGifs = async (q: string) => {
-    setLoading(true);
-    try {
-      const json = await fetchGifs(q || undefined);
-      setGifs((json.data?.data ?? []) as KlipyGif[]);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const getUrl = (gif: KlipyGif) =>
-    gif.file?.hd?.gif?.url ?? gif.file?.sd?.gif?.url ?? '';
 
   const picker = (
     <div

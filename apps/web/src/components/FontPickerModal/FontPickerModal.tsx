@@ -1,7 +1,7 @@
 'use client'
 
 import { createPortal } from 'react-dom'
-import { useEffect } from 'react'
+import { useEscapeKey } from '@/hooks/ui/useEscapeKey'
 
 export type FontKey = 'yeongwol' | 'do-hyeon' | 'keriskedu'
 
@@ -18,13 +18,7 @@ interface Props {
 }
 
 export default function FontPickerModal({ currentFont, onSelect, onClose }: Props) {
-  useEffect(() => {
-    const handleKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onClose()
-    }
-    window.addEventListener('keydown', handleKey)
-    return () => window.removeEventListener('keydown', handleKey)
-  }, [onClose])
+  useEscapeKey(onClose)
 
   return createPortal(
     <div
