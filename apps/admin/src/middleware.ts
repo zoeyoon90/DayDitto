@@ -20,7 +20,12 @@ export async function middleware(request: NextRequest) {
           cookiesToSet.forEach(({ name, value, options }) => {
             // eslint-disable-next-line @typescript-eslint/no-unused-vars
             const { maxAge, expires, ...sessionOptions } = options ?? {};
-            supabaseResponse.cookies.set(name, value, sessionOptions);
+            if (!value) {
+              // 빈값 = 청크 쿠키 cleanup → 즉시 만료
+              supabaseResponse.cookies.set(name, '', { ...sessionOptions, maxAge: 0 });
+            } else {
+              supabaseResponse.cookies.set(name, value, sessionOptions);
+            }
           });
         },
       },
