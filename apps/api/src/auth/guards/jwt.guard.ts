@@ -40,11 +40,36 @@ export class JwtGuard implements CanActivate {
 
     if (error || !user) throw new UnauthorizedException();
 
-    // DB에서 role 조회
-    const [dbUser] = await db
+    // DB에서 role 조회 (없으면 lazy create — 회원가입 후 첫 API 호출 시 생성)
+    let [dbUser] = await db
       .select({ role: users.role })
       .from(users)
       .where(eq(users.id, user.id));
+
+    if (!dbUser) {
+      const provider =
+        ((user.app_metadata as { provider?: string })?.provider ?? 'email') as
+          | 'email'
+          | 'kakao'
+          | 'google';
+      const providerId =
+        (user.identities?.[0]?.id as string | undefined) ?? user.id;
+      const nickname = (user.user_metadata as { nickname?: string })?.nickname;
+
+      await db
+        .insert(users)
+        .values({
+          id: user.id,
+          email: user.email ?? null,
+          nickname: nickname ?? null,
+          provider,
+          providerId,
+          role: 'member',
+        })
+        .onConflictDoNothing();
+
+      dbUser = { role: 'member' };
+    }
 
     (request as Request & { user: unknown }).user = {
       id: user.id,
