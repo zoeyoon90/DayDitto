@@ -2,24 +2,14 @@
 
 import { useState } from 'react';
 import { createPortal } from 'react-dom';
-import { useRouter } from 'next/navigation';
 import ImageUpload from './components/ImageUpload';
 import DiaryLineList from './components/DiaryLineList';
 import DiaryActionBar from './components/DiaryActionBar';
 import DayMeta from './components/DayMeta';
-import { DiaryLineData } from './components/DiaryLine';
 import FontPickerModal, { FontKey, FONTS } from '@/components/FontPickerModal/FontPickerModal';
-import { translate } from '@/api/translate.api';
-import { uploadImage } from '@/api/upload.api';
-import { createLog } from '@/api/logs.api';
-import { ttsBatch } from '@/api/tts.api';
-
-const createLine = (): DiaryLineData => ({
-  id: crypto.randomUUID(),
-  korean: '',
-  english: '',
-  isTranslated: false,
-});
+import { useDiaryLines } from '@/hooks/diary/useDiaryLines';
+import { useDiaryTranslation } from '@/hooks/diary/useDiaryTranslation';
+import { useDiarySave } from '@/hooks/diary/useDiarySave';
 
 const formatDate = (date: Date) =>
   date.toLocaleDateString('ko-KR', {
@@ -30,94 +20,21 @@ const formatDate = (date: Date) =>
   });
 
 export default function CreateLogContainer() {
-  const router = useRouter();
-  const [lines, setLines] = useState<DiaryLineData[]>([createLine()]);
   const [image, setImage] = useState<File | string | null>(null);
-  const [isTranslating, setIsTranslating] = useState(false);
   const [mood, setMood] = useState<string | null>(null);
   const [weather, setWeather] = useState<string | null>(null);
-  const [focusLineId, setFocusLineId] = useState<string | null>(null);
-  const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'error'>('idle');
-  const [saveError, setSaveError] = useState<string>('');
   const [font, setFont] = useState<FontKey>('yeongwol');
   const [showFontModal, setShowFontModal] = useState(false);
 
-  const addLineAfter = (id: string) => {
-    const newLine = createLine();
-    setLines((prev) => {
-      const idx = prev.findIndex((l) => l.id === id);
-      const next = [...prev];
-      next.splice(idx + 1, 0, newLine);
-      return next;
-    });
-    setFocusLineId(newLine.id);
-  };
-
-  const removeLine = (id: string) => {
-    setLines((prev) => prev.filter((l) => l.id !== id));
-  };
-
-  const updateLine = (id: string, value: string) => {
-    setLines((prev) =>
-      prev.map((l) => (l.id === id ? { ...l, korean: value, isTranslated: false } : l)),
-    );
-  };
-
-  const handleTranslate = async () => {
-    setIsTranslating(true);
-    try {
-      const json = await translate(lines.map((l) => l.korean));
-      if (!json.translations) return;
-      setLines((prev) =>
-        prev.map((l, i) =>
-          json.translations[i] ? { ...l, english: json.translations[i], isTranslated: true } : l,
-        ),
-      );
-    } finally {
-      setIsTranslating(false);
-    }
-  };
-
-  const handleSave = async () => {
-    const koreanContent = lines.map((l) => l.korean).filter(Boolean).join('\n');
-    if (!koreanContent.trim()) return;
-
-    setSaveStatus('saving');
-    setSaveError('');
-    try {
-      let imageUrl: string | null = null;
-
-      if (image instanceof File) {
-        const { url } = await uploadImage(image);
-        imageUrl = url;
-      } else if (typeof image === 'string') {
-        imageUrl = image;
-      }
-
-      const englishContent = lines.map((l) => l.english).filter(Boolean).join('\n') || undefined;
-      const logDate = new Date().toISOString().split('T')[0]!;
-
-      const { id } = await createLog({
-        logDate,
-        koreanContent,
-        englishContent,
-        imageUrl,
-        mood: mood ?? undefined,
-        weather: weather ?? undefined,
-      });
-
-      const englishLines = lines.map((l) => l.english).filter(Boolean);
-      if (englishLines.length > 0) {
-        await ttsBatch({ logId: id, lines: englishLines });
-      }
-
-      setSaveStatus('idle');
-      router.push(`/detailLog?id=${id}`);
-    } catch (err) {
-      setSaveError(err instanceof Error ? err.message : '저장 중 오류가 발생했습니다.');
-      setSaveStatus('error');
-    }
-  };
+  const { lines, focusLineId, addLineAfter, removeLine, updateLine, applyTranslations } =
+    useDiaryLines();
+  const { isTranslating, handleTranslate } = useDiaryTranslation(lines, applyTranslations);
+  const { saveStatus, saveError, handleSave, dismissSaveError } = useDiarySave(
+    lines,
+    image,
+    mood,
+    weather,
+  );
 
   return (
     <div className="max-w-201.5 mx-auto px-2 py-4 sm:px-4 sm:py-6 flex flex-col gap-6">
@@ -215,30 +132,31 @@ export default function CreateLogContainer() {
       )}
 
       {/* 저장 상태 모달 */}
-      {saveStatus !== 'idle' && createPortal(
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
-          <div className="bg-bg border-2 border-border shadow-shadow rounded-base p-6 flex flex-col items-center gap-4 min-w-64">
-            {saveStatus === 'saving' ? (
-              <>
-                <div className="w-8 h-8 border-4 border-border border-t-main rounded-full animate-spin" />
-                <p className="text-sm text-foreground">저장 중...</p>
-              </>
-            ) : (
-              <>
-                <p className="text-sm font-medium text-foreground">저장 실패</p>
-                <p className="text-xs text-foreground/60 text-center">{saveError}</p>
-                <button
-                  onClick={() => setSaveStatus('idle')}
-                  className="px-4 h-8 border-2 border-border bg-main rounded-base text-xs shadow-shadow hover:translate-x-boxShadowX hover:translate-y-boxShadowY hover:shadow-none transition-all"
-                >
-                  닫기
-                </button>
-              </>
-            )}
-          </div>
-        </div>,
-        document.body
-      )}
+      {saveStatus !== 'idle' &&
+        createPortal(
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+            <div className="bg-bg border-2 border-border shadow-shadow rounded-base p-6 flex flex-col items-center gap-4 min-w-64">
+              {saveStatus === 'saving' ? (
+                <>
+                  <div className="w-8 h-8 border-4 border-border border-t-main rounded-full animate-spin" />
+                  <p className="text-sm text-foreground">저장 중...</p>
+                </>
+              ) : (
+                <>
+                  <p className="text-sm font-medium text-foreground">저장 실패</p>
+                  <p className="text-xs text-foreground/60 text-center">{saveError}</p>
+                  <button
+                    onClick={dismissSaveError}
+                    className="px-4 h-8 border-2 border-border bg-main rounded-base text-xs shadow-shadow hover:translate-x-boxShadowX hover:translate-y-boxShadowY hover:shadow-none transition-all"
+                  >
+                    닫기
+                  </button>
+                </>
+              )}
+            </div>
+          </div>,
+          document.body,
+        )}
     </div>
   );
 }

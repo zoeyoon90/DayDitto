@@ -1,11 +1,11 @@
 'use client';
 
-import { useState } from 'react';
 import Image from 'next/image';
 import { Button } from '@/components/Button/Button';
 import Input from '@/components/Input/Input';
 import PasswordChangeModal from './PasswordChangeModal';
-import { updateUser } from '@/api/user.api';
+import { useProfileSave } from '@/hooks/profile/useProfileSave';
+import { useState } from 'react';
 
 const SOCIAL_ICONS: Record<string, string> = {
   google: '/Icon/GoogleIcon.svg',
@@ -19,24 +19,8 @@ interface Props {
 }
 
 export default function ProfileInfo({ email, nickname: initialNickname, provider }: Props) {
-  const [nickname, setNickname] = useState(initialNickname ?? '');
-  const [saving, setSaving] = useState(false);
-  const [saveMessage, setSaveMessage] = useState<string | null>(null);
+  const { nickname, setNickname, saving, saveMessage, handleSave } = useProfileSave(initialNickname);
   const [showPasswordModal, setShowPasswordModal] = useState(false);
-
-  const handleSave = async () => {
-    setSaving(true);
-    setSaveMessage(null);
-    try {
-      await updateUser(nickname);
-      setSaveMessage('저장되었습니다.');
-      setTimeout(() => setSaveMessage(null), 2000);
-    } catch (err) {
-      setSaveMessage(err instanceof Error ? err.message : '저장 중 오류가 발생했습니다.');
-    } finally {
-      setSaving(false);
-    }
-  };
 
   const socialIcon = SOCIAL_ICONS[provider];
 

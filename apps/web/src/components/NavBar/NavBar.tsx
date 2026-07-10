@@ -1,18 +1,11 @@
 'use client';
 
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 import { Button } from '../Button/Button';
-import { createClient } from '@/lib/supabase/client';
+import { useLogout } from '@/hooks/auth/useLogout';
 
 export default function NavBar() {
-  const router = useRouter();
-
-  const handleLogout = async () => {
-    const supabase = createClient();
-    await supabase.auth.signOut();
-    router.push('/login');
-  };
+  const { handleLogout } = useLogout();
 
   return (
     <nav className="fixed top-0 left-0 z-50 flex h-13 w-full items-center justify-between px-4 sm:px-8">
