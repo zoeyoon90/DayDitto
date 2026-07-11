@@ -12,6 +12,7 @@ import { UploadModule } from './upload/upload.module';
 import { UsersModule } from './users/users.module';
 import { InquiriesModule } from './inquiries/inquiries.module';
 import { AdminModule } from './admin/admin.module';
+import { NoticesModule } from './notices/notices.module';
 
 @Module({
   imports: [
@@ -26,6 +27,7 @@ import { AdminModule } from './admin/admin.module';
     UsersModule,
     InquiriesModule,
     AdminModule,
+    NoticesModule,
   ],
   controllers: [AppController],
   providers: [AppService],

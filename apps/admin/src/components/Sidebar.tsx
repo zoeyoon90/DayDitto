@@ -8,6 +8,7 @@ const navItems = [
   { href: '/users', label: '유저 목록' },
   { href: '/inquiries', label: '1:1 문의' },
   { href: '/stats', label: '통계' },
+  { href: '/notices', label: '공지알람' },
 ];
 
 export function Sidebar() {

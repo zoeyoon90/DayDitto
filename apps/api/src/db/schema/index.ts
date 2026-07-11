@@ -5,3 +5,4 @@ export * from './favoriteExpressions';
 export * from './relations';
 export * from './inquiries';
 export * from './loginLogs';
+export * from './notices';

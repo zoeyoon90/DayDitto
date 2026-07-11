@@ -5,4 +5,5 @@ export const queryKeys = {
   log: (id: string) => ['log', id] as const,
   inquiries: () => ['inquiries'] as const,
   inquiry: (id: string) => ['inquiry', id] as const,
+  noticeActive: () => ['notices', 'active'] as const,
 }

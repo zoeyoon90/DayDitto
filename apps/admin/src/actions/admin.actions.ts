@@ -7,6 +7,7 @@ import type {
   AdminInquiryDetail,
   AdminStats,
   AdminStatsTrend,
+  AdminNotice,
 } from '@/api/admin.api';
 
 const BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3000';
@@ -61,3 +62,20 @@ export const replyToInquiryAction = async (id: string, adminReply: string) =>
     method: 'PATCH',
     body: JSON.stringify({ adminReply }),
   });
+
+export const fetchAdminNoticesAction = async () =>
+  serverFetch<AdminNotice[]>('/admin/notices');
+
+export const createNoticeAction = async (content: string) =>
+  serverFetch<AdminNotice>('/admin/notices', {
+    method: 'POST',
+    body: JSON.stringify({ content }),
+  });
+
+export const deactivateNoticeAction = async (id: string) =>
+  serverFetch<AdminNotice>(`/admin/notices/${id}/deactivate`, {
+    method: 'PATCH',
+  });
+
+export const resendNoticeAction = async (id: string) =>
+  serverFetch<AdminNotice>(`/admin/notices/${id}/resend`, { method: 'POST' });
