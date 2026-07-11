@@ -108,3 +108,26 @@ export const fetchAdminStats = () => apiFetch<AdminStats>('/admin/stats');
 
 export const fetchAdminStatsTrend = () =>
   apiFetch<AdminStatsTrend>('/admin/stats/trend');
+
+export interface AdminNotice {
+  id: string;
+  content: string;
+  isActive: boolean;
+  createdAt: string;
+  resentAt: string | null;
+}
+
+export const fetchAdminNotices = () =>
+  apiFetch<AdminNotice[]>('/admin/notices');
+
+export const createNotice = (content: string) =>
+  apiFetch<AdminNotice>('/admin/notices', {
+    method: 'POST',
+    body: JSON.stringify({ content }),
+  });
+
+export const deactivateNotice = (id: string) =>
+  apiFetch<AdminNotice>(`/admin/notices/${id}/deactivate`, { method: 'PATCH' });
+
+export const resendNotice = (id: string) =>
+  apiFetch<AdminNotice>(`/admin/notices/${id}/resend`, { method: 'POST' });

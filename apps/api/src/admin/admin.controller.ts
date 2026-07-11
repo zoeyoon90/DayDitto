@@ -4,6 +4,7 @@ import {
   Get,
   Param,
   Patch,
+  Post,
   Req,
   UseGuards,
 } from '@nestjs/common';
@@ -11,11 +12,15 @@ import { Request } from 'express';
 import { JwtGuard } from '../auth/guards/jwt.guard';
 import { AdminGuard } from '../auth/guards/admin.guard';
 import { AdminService } from './admin.service';
+import { NoticesService } from '../notices/notices.service';
 
 @Controller('admin')
 @UseGuards(JwtGuard, AdminGuard)
 export class AdminController {
-  constructor(private readonly adminService: AdminService) {}
+  constructor(
+    private readonly adminService: AdminService,
+    private readonly noticesService: NoticesService,
+  ) {}
 
   @Get('me')
   getMe(@Req() req: Request & { user: { role: string; email: string } }) {
@@ -53,5 +58,25 @@ export class AdminController {
   @Get('stats/trend')
   getStatsTrend() {
     return this.adminService.getStatsTrend();
+  }
+
+  @Post('notices')
+  createNotice(@Body('content') content: string) {
+    return this.noticesService.create(content);
+  }
+
+  @Get('notices')
+  getNotices() {
+    return this.noticesService.getAll();
+  }
+
+  @Patch('notices/:id/deactivate')
+  deactivateNotice(@Param('id') id: string) {
+    return this.noticesService.deactivate(id);
+  }
+
+  @Post('notices/:id/resend')
+  resendNotice(@Param('id') id: string) {
+    return this.noticesService.resend(id);
   }
 }
