@@ -134,9 +134,7 @@ describe('Notices (e2e)', () => {
     });
 
     it('일반 유저 → 403', () => {
-      return request(appUser.getHttpServer())
-        .get('/admin/notices')
-        .expect(403);
+      return request(appUser.getHttpServer()).get('/admin/notices').expect(403);
     });
 
     it('관리자 → 200, 배열', async () => {

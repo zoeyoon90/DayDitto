@@ -23,10 +23,7 @@ export class NoticesService {
   }
 
   async create(content: string) {
-    const [created] = await db
-      .insert(notices)
-      .values({ content })
-      .returning();
+    const [created] = await db.insert(notices).values({ content }).returning();
     return created;
   }
 

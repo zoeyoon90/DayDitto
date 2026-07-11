@@ -90,7 +90,10 @@ describe('NoticesService', () => {
      */
 
     it('전체 공지 목록 반환', async () => {
-      const mockList = [mockNotice, { ...mockNotice, id: 'notice-2', isActive: false }];
+      const mockList = [
+        mockNotice,
+        { ...mockNotice, id: 'notice-2', isActive: false },
+      ];
       mockDb.select.mockReturnValueOnce({
         from: jest.fn().mockReturnValue({
           orderBy: jest.fn().mockResolvedValue(mockList),
@@ -170,7 +173,9 @@ describe('NoticesService', () => {
         }),
       });
 
-      await expect(service.deactivate('nonexistent')).rejects.toThrow(NotFoundException);
+      await expect(service.deactivate('nonexistent')).rejects.toThrow(
+        NotFoundException,
+      );
     });
   });
 
@@ -207,7 +212,9 @@ describe('NoticesService', () => {
         }),
       });
 
-      await expect(service.resend('nonexistent')).rejects.toThrow(NotFoundException);
+      await expect(service.resend('nonexistent')).rejects.toThrow(
+        NotFoundException,
+      );
     });
   });
 });
