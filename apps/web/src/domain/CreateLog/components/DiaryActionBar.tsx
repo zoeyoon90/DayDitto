@@ -5,6 +5,7 @@ import { Button } from '@/components/Button/Button';
 type DiaryActionBarProps = {
   isTranslating: boolean;
   isSaving: boolean;
+  detectedDirection: 'ko→en' | 'en→ko';
   onTranslate: () => void;
   onSave: () => void;
 };
@@ -12,6 +13,7 @@ type DiaryActionBarProps = {
 export default function DiaryActionBar({
   isTranslating,
   isSaving,
+  detectedDirection,
   onTranslate,
   onSave,
 }: DiaryActionBarProps) {
@@ -23,7 +25,7 @@ export default function DiaryActionBar({
         disabled={isTranslating || isSaving}
         className="bg-main border-border text-foreground hover:translate-x-boxShadowX hover:translate-y-boxShadowY hover:shadow-none h-8 w-16"
       >
-        {isTranslating ? '번역 중...' : '번역하기'}
+        {isTranslating ? '번역 중...' : `번역 (${detectedDirection})`}
       </Button>
       <Button variant="default" onClick={onSave} disabled={isSaving} className=' h-8 w-16'>
         {isSaving ? '저장 중...' : '저장하기'}

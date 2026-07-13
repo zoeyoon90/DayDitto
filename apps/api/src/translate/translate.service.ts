@@ -24,9 +24,9 @@ export class TranslateService {
       messages: [
         {
           role: 'user',
-          content: `Translate each Korean diary sentence to natural English. Return ONLY a JSON array of translated strings in the same order. Do not add explanations.
+          content: `Detect the language of each sentence and translate it to the other language (Korean→English or English→Korean). Handle each line independently. Return ONLY a JSON array of translated strings in the same order. Do not add explanations.
 
-Korean sentences:
+Sentences:
 ${nonEmpty.map((l, i) => `${i + 1}. ${l}`).join('\n')}`,
         },
       ],
