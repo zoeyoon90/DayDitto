@@ -28,7 +28,7 @@ export default function CreateLogContainer() {
 
   const { lines, focusLineId, addLineAfter, removeLine, updateLine, applyTranslations } =
     useDiaryLines();
-  const { isTranslating, handleTranslate, detectedDirection } = useDiaryTranslation(lines, applyTranslations);
+  const { isTranslating, handleTranslate } = useDiaryTranslation(lines, applyTranslations);
   const { saveStatus, saveError, handleSave, dismissSaveError } = useDiarySave(
     lines,
     image,
@@ -120,7 +120,6 @@ export default function CreateLogContainer() {
       <DiaryActionBar
         isTranslating={isTranslating}
         isSaving={saveStatus === 'saving'}
-        detectedDirection={detectedDirection}
         onTranslate={handleTranslate}
         onSave={handleSave}
       />
