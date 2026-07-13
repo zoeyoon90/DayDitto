@@ -18,16 +18,7 @@ export async function GET(request: NextRequest) {
           },
           setAll(cookiesToSet) {
             cookiesToSet.forEach(({ name, value, options }) => {
-              if (!value) {
-                cookieStore.set(name, '', { ...(options ?? {}), maxAge: 0 })
-              } else {
-                cookieStore.set(name, value, {
-                  ...(options ?? {}),
-                  httpOnly: true,
-                  sameSite: 'lax',
-                  secure: process.env.NODE_ENV === 'production',
-                })
-              }
+              cookieStore.set(name, value, options ?? {})
             })
           },
         },
