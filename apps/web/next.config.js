@@ -1,12 +1,16 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  async rewrites() {
-    return [
+  images: {
+    remotePatterns: [
       {
-        source: '/api/:path*',
-        destination: 'http://localhost:3000/:path*',
+        protocol: 'https',
+        hostname: '*.supabase.co',
       },
-    ];
+      {
+        protocol: 'https',
+        hostname: 'static.klipy.com',
+      },
+    ],
   },
 };
 
