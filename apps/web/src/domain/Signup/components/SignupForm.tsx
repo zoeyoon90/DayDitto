@@ -8,6 +8,22 @@ import { createClient } from '@/lib/supabase/client'
 import Input from '@/components/Input/Input'
 import { Button } from '@/components/Button/Button'
 
+const SUPABASE_ERROR_MAP: Record<string, string> = {
+  'User already registered': '이미 가입된 이메일입니다.',
+  'Password should be at least 6 characters': '비밀번호는 6자 이상이어야 합니다.',
+  'Unable to validate email address: invalid format': '올바른 이메일 형식이 아닙니다.',
+  'invalid email': '올바른 이메일 형식이 아닙니다.',
+  'Email rate limit exceeded': '잠시 후 다시 시도해주세요.',
+  'signup_disabled': '현재 회원가입이 비활성화되어 있습니다.',
+}
+
+function getSignupErrorMessage(message: string): string {
+  for (const [key, value] of Object.entries(SUPABASE_ERROR_MAP)) {
+    if (message.toLowerCase().includes(key.toLowerCase())) return value
+  }
+  return '회원가입 중 오류가 발생했습니다. 다시 시도해주세요.'
+}
+
 export default function SignupForm() {
   const router = useRouter()
   const {
@@ -27,7 +43,7 @@ export default function SignupForm() {
       options: { data: { nickname: data.nickname } },
     })
     if (error) {
-      setError('root', { message: error.message })
+      setError('root', { message: getSignupErrorMessage(error.message) })
       return
     }
     router.push('/login')
