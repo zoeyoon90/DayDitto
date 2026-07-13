@@ -135,7 +135,7 @@ export default function CreateLogContainer() {
       {saveStatus !== 'idle' &&
         createPortal(
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
-            <div className="bg-bg border-2 border-border shadow-shadow rounded-base p-6 flex flex-col items-center gap-4 min-w-64">
+            <div className="bg-card border-2 border-border shadow-shadow rounded-base p-6 flex flex-col items-center gap-4 min-w-64">
               {saveStatus === 'saving' ? (
                 <>
                   <div className="w-8 h-8 border-4 border-border border-t-main rounded-full animate-spin" />

@@ -12,7 +12,7 @@ export default function DeleteAccountModal({ onClose }: Props) {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
-      <div className="bg-bg border-2 border-border shadow-shadow rounded-base w-full max-w-sm mx-4 p-6">
+      <div className="bg-card border-2 border-border shadow-shadow rounded-base w-full max-w-sm mx-4 p-6">
         <h2 className="text-lg font-bold mb-2">회원탈퇴</h2>
         <p className="text-sm text-foreground/70 mb-6">
           정말 탈퇴하시겠습니까?<br />
