@@ -5,7 +5,6 @@ import { Button } from '@/components/Button/Button';
 type DiaryActionBarProps = {
   isTranslating: boolean;
   isSaving: boolean;
-  detectedDirection: 'ko→en' | 'en→ko';
   onTranslate: () => void;
   onSave: () => void;
 };
@@ -13,7 +12,6 @@ type DiaryActionBarProps = {
 export default function DiaryActionBar({
   isTranslating,
   isSaving,
-  detectedDirection,
   onTranslate,
   onSave,
 }: DiaryActionBarProps) {
