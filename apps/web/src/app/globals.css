@@ -14,12 +14,12 @@ body {
 body {
   color: var(--foreground);
   background: var(--background);
-  font-family: var(--font-yeongwol), sans-serif;
+  font-family: var(--font-sejong-geulggot), sans-serif;
 }
 
 @theme {
   /* 폰트 */
-  --font-sans: var(--font-yeongwol), sans-serif;
+  --font-sans: var(--font-sejong-geulggot), sans-serif;
 
   /* TwoLog 팔레트 A — 평화와 평온 */
   --color-background: #a6c2ce; /* 페이지 배경 */
