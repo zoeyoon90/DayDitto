@@ -4,7 +4,7 @@ import { Cron } from '@nestjs/schedule';
 import { eq } from 'drizzle-orm';
 import * as webpush from 'web-push';
 import { db } from '../db';
-import { pushSubscriptions, users } from '../db/schema';
+import { pushSubscriptions, pushNotificationLogs, users } from '../db/schema';
 
 @Injectable()
 export class NotificationsService implements OnModuleInit {
@@ -32,6 +32,11 @@ export class NotificationsService implements OnModuleInit {
       .from(pushSubscriptions)
       .innerJoin(users, eq(pushSubscriptions.userId, users.id));
 
+    let totalTargeted = 0;
+    let totalSent = 0;
+    let totalExpired = 0;
+    let totalFailed = 0;
+
     await Promise.allSettled(
       subscriptions.map(async (sub) => {
         const tz = sub.timezone ?? 'Asia/Seoul';
@@ -47,6 +52,8 @@ export class NotificationsService implements OnModuleInit {
 
         if (localHour !== 20) return;
 
+        totalTargeted++;
+
         try {
           await webpush.sendNotification(
             {
@@ -60,14 +67,27 @@ export class NotificationsService implements OnModuleInit {
               url: '/',
             }),
           );
+          totalSent++;
         } catch (err: any) {
           if (err.statusCode === 410 || err.statusCode === 404) {
             await db
               .delete(pushSubscriptions)
               .where(eq(pushSubscriptions.endpoint, sub.endpoint));
+            totalExpired++;
+          } else {
+            totalFailed++;
           }
         }
       }),
     );
+
+    if (totalTargeted > 0) {
+      await db.insert(pushNotificationLogs).values({
+        totalTargeted,
+        totalSent,
+        totalExpired,
+        totalFailed,
+      });
+    }
   }
 }

@@ -9,6 +9,7 @@ const navItems = [
   { href: '/inquiries', label: '1:1 문의' },
   { href: '/stats', label: '통계' },
   { href: '/notices', label: '공지알람' },
+  { href: '/push-notifications', label: '푸시 알림' },
 ];
 
 export function Sidebar() {

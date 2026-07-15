@@ -1,7 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { sql, eq, desc } from 'drizzle-orm';
 import { db } from '../db';
-import { inquiries } from '../db/schema';
+import { inquiries, pushSubscriptions, pushNotificationLogs } from '../db/schema';
 
 @Injectable()
 export class AdminService {
@@ -137,6 +137,20 @@ export class AdminService {
         aiMonthResult as unknown as { call_type: string; count: number }[],
       ),
     };
+  }
+
+  async getPushNotificationStats() {
+    const [{ count }] = await db
+      .select({ count: sql<number>`count(*)::int` })
+      .from(pushSubscriptions);
+
+    const logs = await db
+      .select()
+      .from(pushNotificationLogs)
+      .orderBy(desc(pushNotificationLogs.sentAt))
+      .limit(20);
+
+    return { subscriberCount: count, logs };
   }
 
   async getStatsTrend() {
