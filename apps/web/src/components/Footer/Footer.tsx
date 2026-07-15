@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import HomeScreenGuide from './HomeScreenGuide';
 
+
 export default function Footer() {
   return (
     <footer className="relative bg-main text-foreground fixed bottom-0 left-0 right-0 w-full px-8 py-8">
