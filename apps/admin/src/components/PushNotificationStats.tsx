@@ -16,7 +16,7 @@ export function PushNotificationStats() {
   return (
     <div className="space-y-6">
       <div className="bg-white rounded-lg border border-gray-200 p-6 w-fit">
-        <p className="text-sm text-gray-500 mb-1">현재 구독 기기 수</p>
+        <p className="text-sm text-gray-500 mb-1">현재 알림 허용 기기 수</p>
         <p className="text-4xl font-bold text-blue-600">{stats.subscriberCount.toLocaleString()}</p>
         <p className="text-xs text-gray-400 mt-1">대</p>
       </div>
