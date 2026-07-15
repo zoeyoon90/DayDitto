@@ -3,12 +3,13 @@
 import { createPortal } from 'react-dom'
 import { useEscapeKey } from '@/hooks/ui/useEscapeKey'
 
-export type FontKey = 'yeongwol' | 'do-hyeon' | 'keriskedu'
+export type FontKey = 'yeongwol' | 'sejong-geulggot' | 'kyobo' | 'lxgw'
 
 export const FONTS: { key: FontKey; label: string; cssVar: string }[] = [
-  { key: 'yeongwol',  label: '영월체',   cssVar: 'var(--font-yeongwol)' },
-  { key: 'do-hyeon',  label: '도현체',   cssVar: 'var(--font-do-hyeon)' },
-  { key: 'keriskedu', label: '교육부체', cssVar: 'var(--font-keriskedu)' },
+  { key: 'yeongwol',        label: '영월체',       cssVar: 'var(--font-yeongwol)' },
+  { key: 'sejong-geulggot', label: '세종글꽃체',   cssVar: 'var(--font-sejong-geulggot)' },
+  { key: 'kyobo',           label: '교보손글씨체', cssVar: 'var(--font-kyobo)' },
+  { key: 'lxgw',            label: 'LXGW WenKai', cssVar: 'var(--font-lxgw)' },
 ]
 
 interface Props {

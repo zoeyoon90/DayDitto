@@ -34,7 +34,7 @@ export default function GifPicker({ anchorRect, onSelect, onClose }: GifPickerPr
       style={{
         position: 'fixed',
         top: anchorRect.bottom + 4,
-        left: anchorRect.left,
+        left: Math.max(8, Math.min(anchorRect.left, window.innerWidth - 296)),
         zIndex: 9999,
       }}
       className="w-72 bg-card border-2 border-border rounded-base shadow-shadow overflow-hidden"
