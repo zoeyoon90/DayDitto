@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
+import { ScheduleModule } from '@nestjs/schedule';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { AuthModule } from './auth/auth.module';
@@ -13,10 +14,13 @@ import { UsersModule } from './users/users.module';
 import { InquiriesModule } from './inquiries/inquiries.module';
 import { AdminModule } from './admin/admin.module';
 import { NoticesModule } from './notices/notices.module';
+import { PushSubscriptionsModule } from './push-subscriptions/push-subscriptions.module';
+import { NotificationsModule } from './notifications/notifications.module';
 
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true, envFilePath: '.env' }),
+    ScheduleModule.forRoot(),
     AuthModule,
     DailyLogsModule,
     FavoriteExpressionsModule,
@@ -28,6 +32,8 @@ import { NoticesModule } from './notices/notices.module';
     InquiriesModule,
     AdminModule,
     NoticesModule,
+    PushSubscriptionsModule,
+    NotificationsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

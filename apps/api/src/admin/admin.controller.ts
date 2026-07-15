@@ -79,4 +79,9 @@ export class AdminController {
   resendNotice(@Param('id') id: string) {
     return this.noticesService.resend(id);
   }
+
+  @Get('push-notifications/stats')
+  getPushNotificationStats() {
+    return this.adminService.getPushNotificationStats();
+  }
 }
