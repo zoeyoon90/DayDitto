@@ -8,6 +8,7 @@ import type {
   AdminStats,
   AdminStatsTrend,
   AdminNotice,
+  AdminPushNotificationStats,
 } from '@/api/admin.api';
 
 const BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3000';
@@ -79,3 +80,6 @@ export const deactivateNoticeAction = async (id: string) =>
 
 export const resendNoticeAction = async (id: string) =>
   serverFetch<AdminNotice>(`/admin/notices/${id}/resend`, { method: 'POST' });
+
+export const fetchPushNotificationStatsAction = async () =>
+  serverFetch<AdminPushNotificationStats>('/admin/push-notifications/stats');

@@ -131,3 +131,17 @@ export const deactivateNotice = (id: string) =>
 
 export const resendNotice = (id: string) =>
   apiFetch<AdminNotice>(`/admin/notices/${id}/resend`, { method: 'POST' });
+
+export interface PushNotificationLog {
+  id: string;
+  sentAt: string;
+  totalTargeted: number;
+  totalSent: number;
+  totalExpired: number;
+  totalFailed: number;
+}
+
+export interface AdminPushNotificationStats {
+  subscriberCount: number;
+  logs: PushNotificationLog[];
+}
