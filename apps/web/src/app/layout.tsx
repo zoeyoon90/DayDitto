@@ -18,9 +18,21 @@ const yeongwol = localFont({
   display: 'swap',
 });
 
-const keriskedu = localFont({
-  src: '../fonts/KERISKEDU_Line.woff2',
-  variable: '--font-keriskedu',
+const sejongGeulggot = localFont({
+  src: '../fonts/SejongGeulggot.woff2',
+  variable: '--font-sejong-geulggot',
+  display: 'swap',
+});
+
+const kyoboHandwriting = localFont({
+  src: '../fonts/KyoboHandwriting2025lyb.woff2',
+  variable: '--font-kyobo',
+  display: 'swap',
+});
+
+const lxgwWenKai = localFont({
+  src: '../fonts/LXGWWenKaiMonoKR-Medium.woff2',
+  variable: '--font-lxgw',
   display: 'swap',
 });
 
@@ -48,8 +60,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="ko" className={`${doHyeon.variable} ${yeongwol.variable} ${keriskedu.variable}`}>
-      <body className={yeongwol.className}>
+    <html lang="ko" className={`${doHyeon.variable} ${yeongwol.variable} ${sejongGeulggot.variable} ${kyoboHandwriting.variable} ${lxgwWenKai.variable}`}>
+      <body className={sejongGeulggot.className}>
         <QueryProvider>
           <AuthProvider>
             {children}
