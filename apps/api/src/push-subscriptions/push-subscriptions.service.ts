@@ -23,8 +23,6 @@ export class PushSubscriptionsService {
   }
 
   async findAll() {
-    return db
-      .select()
-      .from(pushSubscriptions);
+    return db.select().from(pushSubscriptions);
   }
 }

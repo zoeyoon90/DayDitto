@@ -1,7 +1,11 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { sql, eq, desc } from 'drizzle-orm';
 import { db } from '../db';
-import { inquiries, pushSubscriptions, pushNotificationLogs } from '../db/schema';
+import {
+  inquiries,
+  pushSubscriptions,
+  pushNotificationLogs,
+} from '../db/schema';
 
 @Injectable()
 export class AdminService {

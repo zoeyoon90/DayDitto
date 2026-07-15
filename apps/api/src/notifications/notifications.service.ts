@@ -68,8 +68,13 @@ export class NotificationsService implements OnModuleInit {
             }),
           );
           totalSent++;
-        } catch (err: any) {
-          if (err.statusCode === 410 || err.statusCode === 404) {
+        } catch (err: unknown) {
+          const statusCode =
+            typeof err === 'object' && err !== null && 'statusCode' in err
+              ? (err as { statusCode: number }).statusCode
+              : undefined;
+
+          if (statusCode === 410 || statusCode === 404) {
             await db
               .delete(pushSubscriptions)
               .where(eq(pushSubscriptions.endpoint, sub.endpoint));
