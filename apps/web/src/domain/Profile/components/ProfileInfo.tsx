@@ -5,7 +5,8 @@ import { Button } from '@/components/Button/Button';
 import Input from '@/components/Input/Input';
 import PasswordChangeModal from './PasswordChangeModal';
 import { useProfileSave } from '@/hooks/profile/useProfileSave';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { usePushNotification } from '@/hooks/notifications/usePushNotification';
 
 const SOCIAL_ICONS: Record<string, string> = {
   google: '/Icon/GoogleIcon.svg',
@@ -21,8 +22,19 @@ interface Props {
 export default function ProfileInfo({ email, nickname: initialNickname, provider }: Props) {
   const { nickname, setNickname, saving, saveMessage, handleSave } = useProfileSave(initialNickname);
   const [showPasswordModal, setShowPasswordModal] = useState(false);
+  const [subscribed, setSubscribed] = useState(false);
+  const { isSubscribed, unsubscribe } = usePushNotification();
 
   const socialIcon = SOCIAL_ICONS[provider];
+
+  useEffect(() => {
+    isSubscribed().then(setSubscribed);
+  }, [isSubscribed]);
+
+  async function handleUnsubscribe() {
+    await unsubscribe();
+    setSubscribed(false);
+  }
 
   return (
     <div className="flex flex-col gap-6 w-full max-w-md mx-auto">
@@ -68,6 +80,19 @@ export default function ProfileInfo({ email, nickname: initialNickname, provider
           <span className="text-sm text-foreground/70">{saveMessage}</span>
         )}
       </div>
+
+      {subscribed && (
+        <div className="flex flex-col gap-1">
+          <label className="text-sm text-foreground/70">알림</label>
+          <Button
+            type="button"
+            onClick={handleUnsubscribe}
+            className="bg-card w-fit"
+          >
+            알림 해제
+          </Button>
+        </div>
+      )}
 
       {showPasswordModal && (
         <PasswordChangeModal

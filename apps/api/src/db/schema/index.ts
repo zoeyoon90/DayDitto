@@ -6,3 +6,4 @@ export * from './relations';
 export * from './inquiries';
 export * from './loginLogs';
 export * from './notices';
+export * from './pushSubscriptions';
