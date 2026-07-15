@@ -4,7 +4,7 @@ import HomeScreenGuide from './HomeScreenGuide';
 
 export default function Footer() {
   return (
-    <footer className="relative bg-main text-foreground fixed bottom-0 left-0 right-0 w-full px-8 py-8">
+    <footer className="bg-main text-foreground fixed bottom-0 left-0 right-0 w-full px-8 py-8">
       <HomeScreenGuide />
       <div className="flex items-center justify-between">
         <span className="font-[family-name:var(--font-do-hyeon)] text-sm">
