@@ -18,9 +18,9 @@ export default function HomeScreenGuide() {
   if (!platform) return null;
 
   return (
-    <div className="border-b border-foreground/20 pb-3 text-center font-[family-name:var(--font-do-hyeon)]">
-      <p className="text-sm">홈화면에 추가하세요</p>
-      <p className="mt-0.5 text-xs opacity-70">
+    <div className="absolute bottom-full left-4 right-4 mb-2 rounded-base border-2 border-main bg-card/80 p-3 text-center shadow-shadow backdrop-blur-sm font-(family-name:--font-do-hyeon)">
+      <p className="text-sm font-bold text-foreground">홈화면에 추가하세요</p>
+      <p className="mt-1 text-xs text-foreground/70">
         {platform === 'ios'
           ? '하단 공유(□↑) 탭 → 홈 화면에 추가'
           : '우측 상단 메뉴(⋮) 탭 → 홈 화면에 추가'}
