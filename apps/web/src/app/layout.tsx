@@ -1,4 +1,4 @@
-import type { Metadata } from 'next';
+import type { Metadata, Viewport } from 'next';
 import { Do_Hyeon } from 'next/font/google';
 import localFont from 'next/font/local';
 import './globals.css';
@@ -24,9 +24,22 @@ const keriskedu = localFont({
   display: 'swap',
 });
 
+export const viewport: Viewport = {
+  themeColor: '#e78e23',
+};
+
 export const metadata: Metadata = {
   title: 'DayDitto',
   description: '나의 하루를 다른 언어로 다시 쓰다, 일기 기반 영어 학습 서비스',
+  manifest: '/manifest.json',
+  appleWebApp: {
+    capable: true,
+    title: 'DayDitto',
+    statusBarStyle: 'default',
+  },
+  icons: {
+    apple: '/Icon/logo_icon.png',
+  },
 };
 
 export default function RootLayout({

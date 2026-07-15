@@ -1,0 +1,16 @@
+{
+  "name": "DayDitto",
+  "short_name": "DayDitto",
+  "description": "나의 하루를 다른 언어로 다시 쓰다, 일기 기반 영어 학습 서비스",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#a6c2ce",
+  "theme_color": "#e78e23",
+  "icons": [
+    {
+      "src": "/Icon/logo_icon.png",
+      "sizes": "any",
+      "type": "image/png"
+    }
+  ]
+}
