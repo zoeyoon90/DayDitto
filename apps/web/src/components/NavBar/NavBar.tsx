@@ -4,12 +4,15 @@ import Link from 'next/link';
 import { Button } from '../Button/Button';
 import { useLogout } from '@/hooks/auth/useLogout';
 import { useTodayLogExists } from '@/hooks/diary/useTodayLogExists';
+import DoorAnimationModal from '@/components/DoorAnimationModal/DoorAnimationModal';
 
 export default function NavBar() {
-  const { handleLogout } = useLogout();
+  const { handleLogout, isLoggingOut } = useLogout();
   const todayWritten = useTodayLogExists();
 
   return (
+    <>
+    <DoorAnimationModal isOpen={isLoggingOut} mode="logout" />
     <nav className="fixed top-0 left-0 z-50 flex h-13 w-full items-center justify-between px-4 sm:px-8">
       {/* 로고 */}
       <span className="font-(family-name:--font-yeongwol) text-xl sm:text-2xl font-bold">
@@ -41,5 +44,6 @@ export default function NavBar() {
         </Button>
       </div>
     </nav>
+    </>
   );
 }
