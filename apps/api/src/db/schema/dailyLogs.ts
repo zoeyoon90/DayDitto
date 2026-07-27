@@ -28,6 +28,7 @@ export const dailyLogs = pgTable(
     koreanContent: text('korean_content').notNull(), // 원문 한국어
     englishContent: text('english_content'), // AI 번역 결과
     audioUrl: text('audio_url'), // TTS 오디오 URL (deprecated)
+    font: text('font').notNull().default('sejong-geulggot'), // 일기 폰트
     lineAudioUrls: text('line_audio_urls').array(), // 줄별 TTS URL 배열
     aiFeedback: text('ai_feedback'), // AI 피드백/교정
     createdAt: timestamp('created_at', { withTimezone: true })

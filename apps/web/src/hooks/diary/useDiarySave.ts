@@ -12,6 +12,7 @@ export function useDiarySave(
   image: File | string | null,
   mood: string | null,
   weather: string | null,
+  font: string,
 ) {
   const router = useRouter()
   const queryClient = useQueryClient()
@@ -44,6 +45,7 @@ export function useDiarySave(
         imageUrl,
         mood: mood ?? undefined,
         weather: weather ?? undefined,
+        font,
       })
 
       const today = new Date()

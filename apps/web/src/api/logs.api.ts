@@ -14,4 +14,5 @@ export const createLog = (body: {
   imageUrl?: string | null
   mood?: string
   weather?: string
+  font?: string
 }) => apiFetch<{ id: string }>('/daily-logs', { method: 'POST', body: JSON.stringify(body) })
