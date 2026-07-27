@@ -145,7 +145,9 @@ export class AdminService {
 
   async getPushNotificationStats() {
     const [{ count }] = await db
-      .select({ count: sql<number>`count(distinct ${pushSubscriptions.userId})::int` })
+      .select({
+        count: sql<number>`count(distinct ${pushSubscriptions.userId})::int`,
+      })
       .from(pushSubscriptions);
 
     const failedLogs = await db
