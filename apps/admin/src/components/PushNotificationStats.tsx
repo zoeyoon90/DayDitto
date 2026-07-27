@@ -16,19 +16,19 @@ export function PushNotificationStats() {
   return (
     <div className="space-y-6">
       <div className="bg-white rounded-lg border border-gray-200 p-6 w-fit">
-        <p className="text-sm text-gray-500 mb-1">현재 알림 허용 기기 수</p>
+        <p className="text-sm text-gray-500 mb-1">알림 설정 유저 수</p>
         <p className="text-4xl font-bold text-blue-600">{stats.subscriberCount.toLocaleString()}</p>
-        <p className="text-xs text-gray-400 mt-1">대</p>
+        <p className="text-xs text-gray-400 mt-1">명</p>
       </div>
 
       <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
         <div className="px-6 py-4 border-b border-gray-200">
-          <h2 className="text-sm font-semibold text-gray-700">최근 전송 로그 (최대 20건)</h2>
-          <p className="text-xs text-gray-400 mt-0.5">실제 발송 대상이 있었던 크론 실행만 기록됩니다.</p>
+          <h2 className="text-sm font-semibold text-gray-700">기타 실패 로그 (최대 20건)</h2>
+          <p className="text-xs text-gray-400 mt-0.5">만료 삭제(410/404)를 제외한 실패가 발생한 크론 실행만 표시됩니다.</p>
         </div>
 
-        {stats.logs.length === 0 ? (
-          <p className="px-6 py-8 text-sm text-gray-400 text-center">아직 전송 기록이 없습니다.</p>
+        {(stats.failedLogs ?? []).length === 0 ? (
+          <p className="px-6 py-8 text-sm text-green-600 text-center font-medium">실패 로그 없음</p>
         ) : (
           <table className="w-full text-sm">
             <thead className="bg-gray-50">
@@ -36,41 +36,20 @@ export function PushNotificationStats() {
                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">전송 시각</th>
                 <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">대상</th>
                 <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">성공</th>
-                <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">성공률</th>
-                <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">만료삭제</th>
                 <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">기타실패</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100">
-              {stats.logs.map((log) => {
-                const successRate = log.totalTargeted > 0
-                  ? Math.round((log.totalSent / log.totalTargeted) * 100)
-                  : 0;
-                const hasFailed = log.totalFailed > 0;
-
-                return (
-                  <tr key={log.id} className={hasFailed ? 'bg-red-50' : ''}>
-                    <td className="px-4 py-3 text-gray-700 whitespace-nowrap">
-                      {new Date(log.sentAt).toLocaleString('ko-KR', { timeZone: 'Asia/Seoul' })}
-                    </td>
-                    <td className="px-4 py-3 text-right text-gray-700">{log.totalTargeted}</td>
-                    <td className="px-4 py-3 text-right text-green-600 font-medium">{log.totalSent}</td>
-                    <td className="px-4 py-3 text-right">
-                      <span className={`font-medium ${successRate === 100 ? 'text-green-600' : successRate >= 80 ? 'text-yellow-600' : 'text-red-600'}`}>
-                        {successRate}%
-                      </span>
-                    </td>
-                    <td className="px-4 py-3 text-right text-gray-500">{log.totalExpired}</td>
-                    <td className="px-4 py-3 text-right">
-                      {hasFailed ? (
-                        <span className="font-medium text-red-600">{log.totalFailed}</span>
-                      ) : (
-                        <span className="text-gray-400">0</span>
-                      )}
-                    </td>
-                  </tr>
-                );
-              })}
+              {(stats.failedLogs ?? []).map((log) => (
+                <tr key={log.id} className="bg-red-50">
+                  <td className="px-4 py-3 text-gray-700 whitespace-nowrap">
+                    {new Date(log.sentAt).toLocaleString('ko-KR', { timeZone: 'Asia/Seoul' })}
+                  </td>
+                  <td className="px-4 py-3 text-right text-gray-700">{log.totalTargeted}</td>
+                  <td className="px-4 py-3 text-right text-green-600 font-medium">{log.totalSent}</td>
+                  <td className="px-4 py-3 text-right font-medium text-red-600">{log.totalFailed}</td>
+                </tr>
+              ))}
             </tbody>
           </table>
         )}

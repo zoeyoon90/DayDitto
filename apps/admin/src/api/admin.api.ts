@@ -143,5 +143,5 @@ export interface PushNotificationLog {
 
 export interface AdminPushNotificationStats {
   subscriberCount: number;
-  logs: PushNotificationLog[];
+  failedLogs: PushNotificationLog[];
 }

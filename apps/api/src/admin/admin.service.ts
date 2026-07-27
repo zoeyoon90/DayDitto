@@ -1,5 +1,5 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { sql, eq, desc } from 'drizzle-orm';
+import { sql, eq, desc, gt } from 'drizzle-orm';
 import { db } from '../db';
 import {
   inquiries,
@@ -145,16 +145,17 @@ export class AdminService {
 
   async getPushNotificationStats() {
     const [{ count }] = await db
-      .select({ count: sql<number>`count(*)::int` })
+      .select({ count: sql<number>`count(distinct ${pushSubscriptions.userId})::int` })
       .from(pushSubscriptions);
 
-    const logs = await db
+    const failedLogs = await db
       .select()
       .from(pushNotificationLogs)
+      .where(gt(pushNotificationLogs.totalFailed, 0))
       .orderBy(desc(pushNotificationLogs.sentAt))
       .limit(20);
 
-    return { subscriberCount: count, logs };
+    return { subscriberCount: count, failedLogs };
   }
 
   async getStatsTrend() {
