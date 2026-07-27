@@ -18,7 +18,7 @@ export class NotificationsService implements OnModuleInit {
     );
   }
 
-  @Cron('0 * * * *')
+  @Cron('30 * * * *')
   async sendDailyReminder() {
     const nowUtc = new Date();
 
@@ -50,7 +50,7 @@ export class NotificationsService implements OnModuleInit {
           10,
         );
 
-        if (localHour !== 20) return;
+        if (localHour !== 22) return;
 
         totalTargeted++;
 
