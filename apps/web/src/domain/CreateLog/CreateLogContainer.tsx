@@ -34,6 +34,7 @@ export default function CreateLogContainer() {
     image,
     mood,
     weather,
+    font,
   );
 
   return (

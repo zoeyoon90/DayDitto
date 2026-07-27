@@ -5,4 +5,5 @@ export class CreateLogDto {
   imageUrl?: string;
   mood?: string;
   weather?: string;
+  font?: string;
 }
