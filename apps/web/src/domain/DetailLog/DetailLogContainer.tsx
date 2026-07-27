@@ -1,12 +1,11 @@
 'use client'
 
-import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { queryKeys } from '@/lib/queryKeys'
 import { fetchLogDetail } from '@/api/logs.api'
 import DetailNavBar from './components/DetailNavBar'
 import DetailNoteBook from './components/DetailNoteBook'
-import FontPickerModal, { FontKey, FONTS } from '@/components/FontPickerModal/FontPickerModal'
+import { FONTS } from '@/components/FontPickerModal/FontPickerModal'
 import { useAudioPlayer } from '@/hooks/diary/useAudioPlayer'
 
 interface Props {
@@ -22,9 +21,6 @@ export default function DetailLogContainer({ logId }: Props) {
   const englishLines = log?.englishContent?.split('\n') ?? []
   const lineAudioUrls = log?.lineAudioUrls ?? []
 
-  const [font, setFont] = useState<FontKey>('yeongwol')
-  const [showFontModal, setShowFontModal] = useState(false)
-
   const { playingIndex, playingAll, mergedUrls, loadingIndex, playLine, playAll } =
     useAudioPlayer(logId, englishLines, lineAudioUrls)
 
@@ -35,7 +31,7 @@ export default function DetailLogContainer({ logId }: Props) {
   if (!log) return <p className="text-foreground/40">일기를 찾을 수 없습니다.</p>
 
   const hasAudio = englishLines.some(Boolean)
-  const currentFontVar = FONTS.find((f) => f.key === font)!.cssVar
+  const currentFontVar = (FONTS.find((f) => f.key === log.font) ?? FONTS[0]!).cssVar
 
   return (
     <div className="max-w-201.5 w-full py-6 flex flex-col gap-6">
@@ -47,7 +43,6 @@ export default function DetailLogContainer({ logId }: Props) {
         hasAudio={hasAudio}
         playingAll={playingAll}
         onPlayAll={playAll}
-        onFontClick={() => setShowFontModal(true)}
       />
       <DetailNoteBook
         logId={log.id}
@@ -59,13 +54,6 @@ export default function DetailLogContainer({ logId }: Props) {
         onPlayLine={playLine}
         font={currentFontVar}
       />
-      {showFontModal && (
-        <FontPickerModal
-          currentFont={font}
-          onSelect={setFont}
-          onClose={() => setShowFontModal(false)}
-        />
-      )}
     </div>
   )
 }

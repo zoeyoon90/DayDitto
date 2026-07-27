@@ -21,4 +21,5 @@ export interface DailyLogDetail {
   englishContent: string | null
   audioUrl: string | null
   lineAudioUrls: string[] | null
+  font: string
 }
