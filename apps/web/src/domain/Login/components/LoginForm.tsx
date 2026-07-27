@@ -7,6 +7,7 @@
   import { createClient } from '@/lib/supabase/client'
   import Input from '@/components/Input/Input'
   import { Button } from '@/components/Button/Button'
+  import DoorAnimationModal from '@/components/DoorAnimationModal/DoorAnimationModal'
 
   export default function LoginForm() {
     const router = useRouter()
@@ -33,6 +34,8 @@
     }
 
     return (
+      <>
+      <DoorAnimationModal isOpen={isSubmitting} mode="login" />
       <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4">
         <Input
           label="이메일"
@@ -52,8 +55,9 @@
           <p className="text-sm text-red-500 text-center">{errors.root.message}</p>
         )}
         <Button type="submit" className="w-full bg-main" disabled={isSubmitting}>
-          {isSubmitting ? '로그인 중...' : '로그인'}
+          로그인
         </Button>
       </form>
+      </>
     )
   }
