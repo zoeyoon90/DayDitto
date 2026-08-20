@@ -136,17 +136,23 @@ describe('JwtGuard', () => {
   describe('토큰 추출 실패', () => {
     it('Authorization 헤더 없으면 UnauthorizedException', async () => {
       const ctx = makeExecutionContext();
-      await expect(guard.canActivate(ctx)).rejects.toThrow(UnauthorizedException);
+      await expect(guard.canActivate(ctx)).rejects.toThrow(
+        UnauthorizedException,
+      );
     });
 
     it('Bearer 스키마가 아니면 UnauthorizedException', async () => {
       const ctx = makeExecutionContext('Basic some-credentials');
-      await expect(guard.canActivate(ctx)).rejects.toThrow(UnauthorizedException);
+      await expect(guard.canActivate(ctx)).rejects.toThrow(
+        UnauthorizedException,
+      );
     });
 
     it('Bearer는 있지만 토큰 값 없으면 UnauthorizedException', async () => {
       const ctx = makeExecutionContext('Bearer ');
-      await expect(guard.canActivate(ctx)).rejects.toThrow(UnauthorizedException);
+      await expect(guard.canActivate(ctx)).rejects.toThrow(
+        UnauthorizedException,
+      );
     });
   });
 
@@ -158,7 +164,9 @@ describe('JwtGuard', () => {
       const ctx = makeExecutionContext('Bearer invalid-token');
       mockDecode.mockReturnValue(null);
 
-      await expect(guard.canActivate(ctx)).rejects.toThrow(UnauthorizedException);
+      await expect(guard.canActivate(ctx)).rejects.toThrow(
+        UnauthorizedException,
+      );
     });
 
     it('jwt.verify가 throw → UnauthorizedException', async () => {
@@ -167,7 +175,9 @@ describe('JwtGuard', () => {
         throw new Error('jwt expired');
       });
 
-      await expect(guard.canActivate(ctx)).rejects.toThrow(UnauthorizedException);
+      await expect(guard.canActivate(ctx)).rejects.toThrow(
+        UnauthorizedException,
+      );
     });
   });
 
@@ -334,7 +344,9 @@ describe('JwtGuard', () => {
     it('신규 유저 생성 시 insert가 2번 호출됨 (users + loginLogs)', async () => {
       const ctx = makeExecutionContext('Bearer new-user-token-2');
       mockVerify.mockReturnValue(makeJwtPayload({ sub: 'another-new-user' }));
-      mockGetUser.mockResolvedValueOnce(makeSupabaseUser({ id: 'another-new-user' }));
+      mockGetUser.mockResolvedValueOnce(
+        makeSupabaseUser({ id: 'another-new-user' }),
+      );
 
       mockDb.select.mockReturnValueOnce({
         from: jest.fn().mockReturnValue({
