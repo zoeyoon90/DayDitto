@@ -3,21 +3,39 @@
  *
  * 핵심 검증 포인트:
  * 1. 토큰 없거나 잘못된 형식 → UnauthorizedException
- * 2. Supabase가 토큰 검증 실패 → UnauthorizedException
+ * 2. JWT 로컬 검증 실패 → UnauthorizedException
  * 3. 정상 토큰 + DB 유저 있음 → request.user 주입 후 통과
- * 4. 정상 토큰 + DB 유저 없음 → 자동 생성(lazy create) 후 통과
+ * 4. 정상 토큰 + DB 유저 없음 → Supabase API 호출 후 자동 생성(lazy create) 후 통과
  *
  * Mock 전략:
- * - @supabase/supabase-js: createClient mock → getUser 응답 제어
+ * - jwks-rsa: jose(pure ESM) 의존으로 Jest 파싱 불가 → 전체 mock
+ * - jsonwebtoken: decode/verify mock → payload 제어
+ * - @supabase/supabase-js: createClient mock → 신규 유저 getUser 응답 제어
  * - ../../db: DB 쿼리 전체 mock
  */
 import { UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtGuard } from './jwt.guard';
 import { db } from '../../db';
+import * as jwt from 'jsonwebtoken';
 
-// getUser를 팩토리 내부에서 jest.fn()으로 정의
-// 팩토리 외부에서는 jest.requireMock으로 참조 — hoisting 타이밍 문제 회피
+// jwks-rsa → jose(pure ESM) 의존으로 Jest CJS 환경에서 파싱 실패 → 전체 mock
+// __esModule: true 필수 — ts-jest의 default import 처리 방식 때문
+jest.mock('jwks-rsa', () => ({
+  __esModule: true,
+  default: jest.fn().mockReturnValue({
+    getSigningKey: jest.fn().mockResolvedValue({
+      getPublicKey: jest.fn().mockReturnValue('mock-public-key'),
+    }),
+  }),
+}));
+
+jest.mock('jsonwebtoken', () => ({
+  decode: jest.fn(),
+  verify: jest.fn(),
+}));
+
+// 신규 유저 lazy create 시 Supabase API 호출 mock
 jest.mock('@supabase/supabase-js', () => ({
   createClient: jest.fn().mockReturnValue({
     auth: {
@@ -26,9 +44,10 @@ jest.mock('@supabase/supabase-js', () => ({
   }),
 }));
 
-// mock된 모듈에서 getUser 함수 참조를 꺼내서 테스트에서 제어
 const { createClient } = jest.requireMock('@supabase/supabase-js');
 const mockGetUser = createClient().auth.getUser as jest.Mock;
+const mockDecode = jwt.decode as jest.Mock;
+const mockVerify = jwt.verify as jest.Mock;
 
 jest.mock('../../db', () => ({
   db: {
@@ -48,7 +67,7 @@ const mockDb = db as unknown as {
 // 헬퍼: NestJS ExecutionContext 가짜 객체 생성
 // ──────────────────────────────────────────────
 function makeExecutionContext(authHeader?: string) {
-  const request: Record<string, any> = {
+  const request: Record<string, unknown> = {
     headers: authHeader ? { authorization: authHeader } : {},
     user: undefined,
   };
@@ -56,15 +75,27 @@ function makeExecutionContext(authHeader?: string) {
     switchToHttp: () => ({
       getRequest: () => request,
     }),
-    // 테스트에서 request.user를 확인하기 위한 참조
     request,
   } as any;
 }
 
 // ──────────────────────────────────────────────
-// 헬퍼: Supabase 정상 유저 응답 생성
+// 헬퍼: jwt.verify가 반환할 페이로드 생성
 // ──────────────────────────────────────────────
-function makeSupabaseUser(override: Record<string, any> = {}) {
+function makeJwtPayload(override: Record<string, unknown> = {}) {
+  return {
+    sub: 'user-1',
+    email: 'test@test.com',
+    user_metadata: { nickname: '테스터' },
+    app_metadata: { provider: 'email' },
+    ...override,
+  };
+}
+
+// ──────────────────────────────────────────────
+// 헬퍼: Supabase 정상 유저 응답 생성 (신규 유저 lazy create 시 사용)
+// ──────────────────────────────────────────────
+function makeSupabaseUser(override: Record<string, unknown> = {}) {
   return {
     data: {
       user: {
@@ -84,7 +115,6 @@ describe('JwtGuard', () => {
   let guard: JwtGuard;
 
   beforeEach(() => {
-    // ConfigService mock: 환경변수 대신 테스트용 값 반환
     const configService = {
       get: (key: string) => {
         if (key === 'SUPABASE_URL') return 'https://test.supabase.co';
@@ -95,6 +125,9 @@ describe('JwtGuard', () => {
 
     guard = new JwtGuard(configService);
     jest.clearAllMocks();
+
+    // decode 기본값: 유효한 헤더 반환
+    mockDecode.mockReturnValue({ header: { kid: 'test-kid' } });
   });
 
   // ──────────────────────────────────────────────
@@ -102,8 +135,7 @@ describe('JwtGuard', () => {
   // ──────────────────────────────────────────────
   describe('토큰 추출 실패', () => {
     it('Authorization 헤더 없으면 UnauthorizedException', async () => {
-      const ctx = makeExecutionContext(); // 헤더 없음
-
+      const ctx = makeExecutionContext();
       await expect(guard.canActivate(ctx)).rejects.toThrow(
         UnauthorizedException,
       );
@@ -111,7 +143,6 @@ describe('JwtGuard', () => {
 
     it('Bearer 스키마가 아니면 UnauthorizedException', async () => {
       const ctx = makeExecutionContext('Basic some-credentials');
-
       await expect(guard.canActivate(ctx)).rejects.toThrow(
         UnauthorizedException,
       );
@@ -119,8 +150,6 @@ describe('JwtGuard', () => {
 
     it('Bearer는 있지만 토큰 값 없으면 UnauthorizedException', async () => {
       const ctx = makeExecutionContext('Bearer ');
-
-      // '' 빈 문자열도 falsy → null 반환
       await expect(guard.canActivate(ctx)).rejects.toThrow(
         UnauthorizedException,
       );
@@ -128,26 +157,22 @@ describe('JwtGuard', () => {
   });
 
   // ──────────────────────────────────────────────
-  // Supabase 토큰 검증 실패
+  // JWT 로컬 검증 실패
   // ──────────────────────────────────────────────
-  describe('Supabase 검증 실패', () => {
-    it('Supabase가 error 반환 → UnauthorizedException', async () => {
+  describe('JWT 로컬 검증 실패', () => {
+    it('jwt.decode가 null 반환 → UnauthorizedException', async () => {
       const ctx = makeExecutionContext('Bearer invalid-token');
-      mockGetUser.mockResolvedValueOnce({
-        data: { user: null },
-        error: new Error('JWT expired'),
-      });
+      mockDecode.mockReturnValue(null);
 
       await expect(guard.canActivate(ctx)).rejects.toThrow(
         UnauthorizedException,
       );
     });
 
-    it('Supabase가 user null 반환 → UnauthorizedException', async () => {
-      const ctx = makeExecutionContext('Bearer some-token');
-      mockGetUser.mockResolvedValueOnce({
-        data: { user: null },
-        error: null,
+    it('jwt.verify가 throw → UnauthorizedException', async () => {
+      const ctx = makeExecutionContext('Bearer expired-token');
+      mockVerify.mockImplementation(() => {
+        throw new Error('jwt expired');
       });
 
       await expect(guard.canActivate(ctx)).rejects.toThrow(
@@ -162,22 +187,20 @@ describe('JwtGuard', () => {
   describe('정상 인증 - DB에 유저 존재', () => {
     /**
      * DB 호출 순서 (유저 있는 경우):
-     * 1. db.select({role}).from(users).where(id)          ← 유저 role 조회
-     * 2. db.insert(loginLogs).values(...).onConflictDoNothing().returning() ← 로그인 로그
-     * 3. db.update(users).set({lastLoginAt, loginCount}).where(id) ← 마지막 로그인 갱신
+     * 1. db.select({role}).from(users).where(id)
+     * 2. db.insert(loginLogs).values(...).onConflictDoNothing().returning()
+     * 3. db.update(users).set({lastLoginAt, loginCount}).where(id)
      */
 
     it('request.user에 유저 정보 주입 후 true 반환', async () => {
       const ctx = makeExecutionContext('Bearer valid-token');
-      mockGetUser.mockResolvedValueOnce(makeSupabaseUser());
+      mockVerify.mockReturnValue(makeJwtPayload());
 
-      // 1. 유저 role 조회
       mockDb.select.mockReturnValueOnce({
         from: jest.fn().mockReturnValue({
           where: jest.fn().mockResolvedValue([{ role: 'member' }]),
         }),
       });
-      // 2. 로그인 로그 (새 항목 INSERT 성공)
       mockDb.insert.mockReturnValueOnce({
         values: jest.fn().mockReturnValue({
           onConflictDoNothing: jest.fn().mockReturnValue({
@@ -185,7 +208,6 @@ describe('JwtGuard', () => {
           }),
         }),
       });
-      // 3. 마지막 로그인 갱신
       mockDb.update.mockReturnValueOnce({
         set: jest.fn().mockReturnValue({
           where: jest.fn().mockResolvedValue([]),
@@ -204,7 +226,7 @@ describe('JwtGuard', () => {
 
     it('role이 admin인 유저도 정상 통과', async () => {
       const ctx = makeExecutionContext('Bearer admin-token');
-      mockGetUser.mockResolvedValueOnce(makeSupabaseUser());
+      mockVerify.mockReturnValue(makeJwtPayload());
 
       mockDb.select.mockReturnValueOnce({
         from: jest.fn().mockReturnValue({
@@ -231,7 +253,7 @@ describe('JwtGuard', () => {
 
     it('로그인 로그 중복(당일 이미 로그인)이면 users UPDATE 안 함', async () => {
       const ctx = makeExecutionContext('Bearer valid-token');
-      mockGetUser.mockResolvedValueOnce(makeSupabaseUser());
+      mockVerify.mockReturnValue(makeJwtPayload());
 
       mockDb.select.mockReturnValueOnce({
         from: jest.fn().mockReturnValue({
@@ -242,7 +264,7 @@ describe('JwtGuard', () => {
       mockDb.insert.mockReturnValueOnce({
         values: jest.fn().mockReturnValue({
           onConflictDoNothing: jest.fn().mockReturnValue({
-            returning: jest.fn().mockResolvedValue([]), // 중복 → 삽입 안 됨
+            returning: jest.fn().mockResolvedValue([]),
           }),
         }),
       });
@@ -255,19 +277,28 @@ describe('JwtGuard', () => {
   });
 
   // ──────────────────────────────────────────────
-  // 신규 유저 — DB에 없으면 자동 생성 (lazy create)
+  // 신규 유저 — DB에 없으면 Supabase API 호출 후 자동 생성
   // ──────────────────────────────────────────────
   describe('신규 유저 lazy create', () => {
     /**
      * DB 호출 순서 (유저 없는 경우):
-     * 1. db.select({role}).from(users).where(id)          ← 조회 → []
-     * 2. db.insert(users).values(...).onConflictDoNothing() ← 신규 유저 생성
-     * 3. db.insert(loginLogs).values(...).onConflictDoNothing().returning()
-     * 4. db.update(users).set({lastLoginAt, loginCount}).where(id)
+     * 1. db.select({role}).from(users).where(id) → []
+     * 2. supabaseAdmin.auth.getUser(token) → identities 등 상세 정보
+     * 3. db.insert(users).values(...).onConflictDoNothing()
+     * 4. db.insert(loginLogs).values(...).onConflictDoNothing().returning()
+     * 5. db.update(users).set({lastLoginAt, loginCount}).where(id)
      */
 
-    it('DB에 유저 없으면 자동 생성 후 member role로 통과', async () => {
+    it('DB에 유저 없으면 Supabase API 호출 후 자동 생성, member role로 통과', async () => {
       const ctx = makeExecutionContext('Bearer new-user-token');
+      mockVerify.mockReturnValue(
+        makeJwtPayload({
+          sub: 'new-user-id',
+          email: 'new@test.com',
+          app_metadata: { provider: 'google' },
+          user_metadata: {},
+        }),
+      );
       mockGetUser.mockResolvedValueOnce(
         makeSupabaseUser({
           id: 'new-user-id',
@@ -307,12 +338,12 @@ describe('JwtGuard', () => {
       const result = await guard.canActivate(ctx);
 
       expect(result).toBe(true);
-      // lazy create 후 role은 'member'로 설정됨
       expect(ctx.request.user.role).toBe('member');
     });
 
     it('신규 유저 생성 시 insert가 2번 호출됨 (users + loginLogs)', async () => {
       const ctx = makeExecutionContext('Bearer new-user-token-2');
+      mockVerify.mockReturnValue(makeJwtPayload({ sub: 'another-new-user' }));
       mockGetUser.mockResolvedValueOnce(
         makeSupabaseUser({ id: 'another-new-user' }),
       );
