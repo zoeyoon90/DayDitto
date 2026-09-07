@@ -11,6 +11,8 @@ async function bootstrap() {
       'https://dayditto.co.kr',
       'https://www.dayditto.co.kr',
       'https://admin.dayditto.co.kr',
+      'https://dayditto.web.tossmini.com',
+      'https://dayditto.private-web.tossmini.com',
     ],
     credentials: true,
     allowedHeaders: ['Authorization', 'Content-Type'],
