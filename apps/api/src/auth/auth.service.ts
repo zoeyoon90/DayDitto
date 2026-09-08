@@ -177,6 +177,8 @@ export class AuthService {
     const hash = crypto.createHash('sha256').update(userKey).digest('hex');
     const fakeEmail = `toss_${hash.slice(0, 16)}@toss.internal`;
 
+    let authUserId: string;
+
     const { data, error } = await this.supabaseAdmin.auth.admin.createUser({
       email: fakeEmail,
       password: crypto.randomUUID(),
@@ -184,14 +186,40 @@ export class AuthService {
       app_metadata: { provider: 'toss' },
     });
 
-    if (error || !data.user) {
-      throw new Error(`Failed to create Supabase user: ${error?.message}`);
+    if (error) {
+      // 이미 존재하는 email이면 기존 유저 조회
+      const { data: listData } =
+        await this.supabaseAdmin.auth.admin.listUsers();
+      const existingAuth = (
+        listData?.users as { id: string; email?: string }[] | undefined
+      )?.find((u) => u.email === fakeEmail);
+      if (!existingAuth) {
+        throw new Error(`Failed to create Supabase user: ${error.message}`);
+      }
+      authUserId = existingAuth.id;
+    } else {
+      authUserId = data.user.id;
+    }
+
+    // auth.users에 이미 대응하는 public.users 레코드가 있을 수 있음
+    const [existingByAuthId] = await db
+      .select()
+      .from(users)
+      .where(eq(users.id, authUserId));
+
+    if (existingByAuthId) {
+      // providerId 업데이트 (이전 userKey → 현재 anonKey hash)
+      await db
+        .update(users)
+        .set({ providerId: userKey })
+        .where(eq(users.id, authUserId));
+      return { ...existingByAuthId, providerId: userKey };
     }
 
     const [newUser] = await db
       .insert(users)
       .values({
-        id: data.user.id,
+        id: authUserId,
         email: null,
         nickname: null,
         provider: 'toss',
