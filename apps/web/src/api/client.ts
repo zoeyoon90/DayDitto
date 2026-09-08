@@ -1,15 +1,10 @@
 'use client'
 
 import { createClient } from '@/lib/supabase/client'
-import { getTossToken } from '@/hooks/auth/useTossAuth'
 
 const BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3000'
 
 async function getToken(): Promise<string | null> {
-  // 토스 JWT가 있으면 우선 사용
-  const tossToken = getTossToken()
-  if (tossToken) return tossToken
-
   const supabase = createClient()
   const {
     data: { session },

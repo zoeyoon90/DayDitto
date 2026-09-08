@@ -20,7 +20,12 @@ export class AuthController {
   }
 
   @Post('toss')
-  async tossLogin(@Body() body: { anonKey: string }) {
-    return this.authService.loginWithTossAnonKey(body.anonKey);
+  async tossLogin(@Body() body: { authorizationCode: string }) {
+    return this.authService.loginWithTossAuthCode(body.authorizationCode);
+  }
+
+  @Post('toss/refresh')
+  async tossRefresh(@Body() body: { refreshToken: string }) {
+    return this.authService.refreshTossToken(body.refreshToken);
   }
 }

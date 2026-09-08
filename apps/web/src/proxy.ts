@@ -29,10 +29,8 @@ export async function proxy(request: NextRequest) {
   } = await supabase.auth.getUser()
 
   const pathname = request.nextUrl.pathname
-  const hasTossAnonKey = request.nextUrl.searchParams.has('tossAnonKey')
 
   const isPublic =
-    hasTossAnonKey ||
     pathname === '/' ||
     pathname === '/login' ||
     pathname === '/signup' ||

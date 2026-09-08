@@ -1,83 +1,184 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { createClient } from '@supabase/supabase-js';
 import * as jwt from 'jsonwebtoken';
+import * as https from 'https';
+import * as crypto from 'crypto';
 import { eq } from 'drizzle-orm';
 import { db } from '../db';
 import { users } from '../db/schema';
 
+interface TossTokenResponse {
+  accessToken: string;
+  refreshToken: string;
+  tokenType: string;
+  expiresIn: number;
+}
+
+interface TossUserResponse {
+  userKey: string;
+}
+
 @Injectable()
 export class AuthService {
   private readonly supabaseAdmin: ReturnType<typeof createClient>;
-  private readonly tossJwtSecret: string;
+  private readonly jwtSecret: string;
+  private readonly refreshSecret: string;
+  private readonly tossApiAgent: https.Agent;
+  private readonly tossApiBaseUrl =
+    'https://apps-in-toss-api.toss.im/api-partner/v1/apps-in-toss/user/oauth2';
 
-  constructor(configService: ConfigService) {
+  constructor(private readonly configService: ConfigService) {
     this.supabaseAdmin = createClient(
       configService.get<string>('SUPABASE_URL')!,
       configService.get<string>('SUPABASE_SERVICE_ROLE_KEY')!,
       { auth: { persistSession: false } },
     );
-    this.tossJwtSecret = configService.get<string>('TOSS_JWT_SECRET')!;
+    this.jwtSecret = configService.get<string>('TOSS_JWT_SECRET')!;
+    this.refreshSecret = configService.get<string>('TOSS_REFRESH_SECRET')!;
+
+    // mTLS 클라이언트 인증서 설정
+    this.tossApiAgent = new https.Agent({
+      cert: configService.get<string>('TOSS_MTLS_CERT'),
+      key: configService.get<string>('TOSS_MTLS_KEY'),
+      ca: configService.get<string>('TOSS_MTLS_CA'),
+    });
   }
 
-  async loginWithTossAnonKey(anonKey: string) {
-    // anonKey를 providerId로 사용하여 기존 유저 조회
+  async loginWithTossAuthCode(authorizationCode: string) {
+    // 1. mTLS로 토스 API에 인가코드 교환
+    const tossTokens = await this.exchangeTossToken(authorizationCode);
+
+    // 2. 토스 accessToken으로 유저 정보 조회
+    const tossUser = await this.getTossUserInfo(tossTokens.accessToken);
+
+    // 3. DB에서 유저 조회/생성 (userKey = providerId)
+    const user = await this.findOrCreateTossUser(tossUser.userKey);
+
+    // 4. 자체 JWT 발급
+    return {
+      accessToken: this.signJwt(user.id),
+      refreshToken: this.signRefreshToken(user.id),
+      user: {
+        id: user.id,
+        nickname: user.nickname,
+        provider: user.provider,
+      },
+    };
+  }
+
+  async refreshTossToken(refreshToken: string) {
+    try {
+      const payload = jwt.verify(
+        refreshToken,
+        this.refreshSecret,
+      ) as jwt.JwtPayload;
+      if (payload.type !== 'refresh') throw new Error('invalid token type');
+
+      const userId = payload.sub!;
+      const [dbUser] = await db
+        .select()
+        .from(users)
+        .where(eq(users.id, userId));
+      if (!dbUser) throw new Error('user not found');
+
+      return {
+        accessToken: this.signJwt(userId),
+        refreshToken: this.signRefreshToken(userId),
+      };
+    } catch {
+      throw new UnauthorizedException('Invalid refresh token');
+    }
+  }
+
+  private async exchangeTossToken(
+    authorizationCode: string,
+  ): Promise<TossTokenResponse> {
+    const res = await fetch(`${this.tossApiBaseUrl}/generate-token`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ authorizationCode }),
+      // @ts-expect-error Node.js fetch supports dispatcher for custom agent
+      dispatcher: this.tossApiAgent,
+    });
+
+    if (!res.ok) {
+      const body = await res.text();
+      throw new UnauthorizedException(
+        `Toss token exchange failed: ${res.status} ${body}`,
+      );
+    }
+
+    return res.json() as Promise<TossTokenResponse>;
+  }
+
+  private async getTossUserInfo(
+    accessToken: string,
+  ): Promise<TossUserResponse> {
+    const res = await fetch(`${this.tossApiBaseUrl}/login-me`, {
+      headers: { Authorization: `Bearer ${accessToken}` },
+      // @ts-expect-error Node.js fetch supports dispatcher for custom agent
+      dispatcher: this.tossApiAgent,
+    });
+
+    if (!res.ok) {
+      throw new UnauthorizedException('Failed to get Toss user info');
+    }
+
+    return res.json() as Promise<TossUserResponse>;
+  }
+
+  private async findOrCreateTossUser(userKey: string) {
     const [existing] = await db
       .select()
       .from(users)
-      .where(eq(users.providerId, anonKey));
+      .where(eq(users.providerId, userKey));
 
-    if (existing) {
-      const accessToken = this.signTossJwt(existing.id);
-      return {
-        accessToken,
-        user: {
-          id: existing.id,
-          nickname: existing.nickname,
-          provider: existing.provider,
-        },
-      };
-    }
+    if (existing) return existing;
 
-    // 신규 유저: Supabase auth.users에 생성 (FK 충족용)
-    const fakeEmail = `toss_${anonKey.slice(0, 16)}@toss.internal`;
+    // Supabase auth.users에 생성 (FK 충족용)
+    const hash = crypto.createHash('sha256').update(userKey).digest('hex');
+    const fakeEmail = `toss_${hash.slice(0, 16)}@toss.internal`;
+
     const { data, error } = await this.supabaseAdmin.auth.admin.createUser({
       email: fakeEmail,
       password: crypto.randomUUID(),
       email_confirm: true,
       app_metadata: { provider: 'toss' },
-      user_metadata: { nickname: null },
     });
 
     if (error || !data.user) {
       throw new Error(`Failed to create Supabase user: ${error?.message}`);
     }
 
-    await db.insert(users).values({
-      id: data.user.id,
-      email: null,
-      nickname: null,
-      provider: 'toss',
-      providerId: anonKey,
-      role: 'member',
-    });
-
-    const accessToken = this.signTossJwt(data.user.id);
-    return {
-      accessToken,
-      user: {
+    const [newUser] = await db
+      .insert(users)
+      .values({
         id: data.user.id,
+        email: null,
         nickname: null,
         provider: 'toss',
-      },
-    };
+        providerId: userKey,
+        role: 'member',
+      })
+      .returning();
+
+    return newUser;
   }
 
-  private signTossJwt(userId: string): string {
+  private signJwt(userId: string): string {
     return jwt.sign(
       { sub: userId, provider: 'toss', iss: 'dayditto' },
-      this.tossJwtSecret,
-      { expiresIn: '30d' },
+      this.jwtSecret,
+      { expiresIn: '1h' },
+    );
+  }
+
+  private signRefreshToken(userId: string): string {
+    return jwt.sign(
+      { sub: userId, type: 'refresh' },
+      this.refreshSecret,
+      { expiresIn: '14d' },
     );
   }
 }

@@ -6,14 +6,12 @@ import { queryKeys } from '@/lib/queryKeys';
 import { fetchUser, UserInfo } from '@/api/user.api';
 import { createClient } from '@/lib/supabase/client';
 import { usePushNotification } from '@/hooks/notifications/usePushNotification';
-import { useTossAuth } from '@/hooks/auth/useTossAuth';
 
 const AuthContext = createContext<UserInfo | null>(null);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const queryClient = useQueryClient();
   const { subscribe } = usePushNotification();
-  const { isToss, ready: tossReady } = useTossAuth();
 
   useEffect(() => {
     const clearBadge = () => {
@@ -26,9 +24,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return () => document.removeEventListener('visibilitychange', clearBadge);
   }, []);
 
-  // 유저 전환 시 캐시 정리 (토스 환경에선 스킵)
   useEffect(() => {
-    if (isToss) return;
     const supabase = createClient();
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
       if (event === 'SIGNED_OUT') {
@@ -38,19 +34,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
     });
     return () => subscription.unsubscribe();
-  }, [queryClient, isToss]);
+  }, [queryClient]);
 
   const { data: user = null } = useQuery({
     queryKey: queryKeys.user(),
     queryFn: () => fetchUser().catch(() => null),
-    enabled: tossReady,
   });
 
   useEffect(() => {
-    if (user && !isToss) {
+    if (user) {
       subscribe().catch(() => {});
     }
-  }, [user, subscribe, isToss]);
+  }, [user, subscribe]);
 
   return <AuthContext.Provider value={user}>{children}</AuthContext.Provider>;
 }
