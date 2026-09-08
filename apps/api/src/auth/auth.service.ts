@@ -3,6 +3,8 @@ import { ConfigService } from '@nestjs/config';
 import { createClient } from '@supabase/supabase-js';
 import * as jwt from 'jsonwebtoken';
 import * as https from 'https';
+import * as fs from 'fs';
+import * as path from 'path';
 import * as crypto from 'crypto';
 import { eq } from 'drizzle-orm';
 import { db } from '../db';
@@ -37,11 +39,12 @@ export class AuthService {
     this.jwtSecret = configService.get<string>('TOSS_JWT_SECRET')!;
     this.refreshSecret = configService.get<string>('TOSS_REFRESH_SECRET')!;
 
-    // mTLS 클라이언트 인증서 설정
+    // mTLS 클라이언트 인증서 설정 (파일 경로에서 읽기)
+    const certPath = configService.get<string>('TOSS_MTLS_CERT_PATH')!;
+    const keyPath = configService.get<string>('TOSS_MTLS_KEY_PATH')!;
     this.tossApiAgent = new https.Agent({
-      cert: configService.get<string>('TOSS_MTLS_CERT'),
-      key: configService.get<string>('TOSS_MTLS_KEY'),
-      ca: configService.get<string>('TOSS_MTLS_CA'),
+      cert: fs.readFileSync(path.resolve(certPath)),
+      key: fs.readFileSync(path.resolve(keyPath)),
     });
   }
 
