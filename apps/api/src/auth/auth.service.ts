@@ -56,10 +56,7 @@ export class AuthService {
     }
   }
 
-  async loginWithTossAuthCode(
-    authorizationCode: string,
-    referrer?: string,
-  ) {
+  async loginWithTossAuthCode(authorizationCode: string, referrer?: string) {
     // 1. mTLS로 토스 API에 인가코드 교환
     const tossTokens = await this.exchangeTossToken(
       authorizationCode,
@@ -105,8 +102,7 @@ export class AuthService {
         .createHash('sha256')
         .update(payload.jti)
         .digest('hex');
-      if (dbUser.refreshTokenHash !== hash)
-        throw new Error('token reused');
+      if (dbUser.refreshTokenHash !== hash) throw new Error('token reused');
 
       return {
         accessToken: this.signJwt(userId),
@@ -216,10 +212,8 @@ export class AuthService {
       .set({ refreshTokenHash: hash })
       .where(eq(users.id, userId));
 
-    return jwt.sign(
-      { sub: userId, type: 'refresh', jti },
-      this.refreshSecret,
-      { expiresIn: '14d' },
-    );
+    return jwt.sign({ sub: userId, type: 'refresh', jti }, this.refreshSecret, {
+      expiresIn: '14d',
+    });
   }
 }
