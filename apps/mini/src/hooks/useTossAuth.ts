@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { TossAuth } from '@apps-in-toss/web-framework'
+import { User } from '@apps-in-toss/web-framework'
 
 const BASE_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:3000'
 const ACCESS_TOKEN_KEY = 'access_token'
@@ -12,12 +12,16 @@ export function useTossAuth() {
   const login = useCallback(async () => {
     try {
       setError(null)
-      const { authorizationCode, referrer } = await TossAuth.login()
+      const result = await User.getAnonymousKey()
 
-      const res = await fetch(`${BASE_URL}/auth/toss`, {
+      if (result.type !== 'HASH') {
+        throw new Error(`getAnonymousKey failed: ${result.type}`)
+      }
+
+      const res = await fetch(`${BASE_URL}/auth/toss/anon`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ authorizationCode, referrer }),
+        body: JSON.stringify({ hash: result.hash }),
       })
 
       if (!res.ok) throw new Error(`Auth failed: ${res.status}`)
