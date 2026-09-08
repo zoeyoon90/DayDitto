@@ -1,0 +1,27 @@
+@import 'tailwindcss';
+
+:root {
+  --background: #f5f1e8;
+  --foreground: #2f3e46;
+}
+
+html,
+body {
+  max-width: 100vw;
+  overflow-x: hidden;
+}
+
+body {
+  color: var(--foreground);
+  background: var(--background);
+  font-family: -apple-system, 'Helvetica Neue', sans-serif;
+}
+
+@theme {
+  --color-background: #a6c2ce;
+  --color-card: #f5f1e8;
+  --color-main: #e78e23;
+  --color-accent: #5e8ca7;
+  --color-foreground: #2f3e46;
+  --radius-base: 5px;
+}

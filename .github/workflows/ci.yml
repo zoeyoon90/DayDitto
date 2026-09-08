@@ -56,5 +56,15 @@ jobs:
       - name: Build
         run: pnpm build
 
+      - name: Cache npm (mini)
+        uses: actions/cache@v4
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-npm-mini-${{ hashFiles('apps/mini/package-lock.json') }}
+
+      - name: Build (mini)
+        working-directory: apps/mini
+        run: npm ci && npm run build
+
       - name: Test (api)
         run: pnpm --filter api test
