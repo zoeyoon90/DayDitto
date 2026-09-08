@@ -34,6 +34,7 @@ export const users = pgTable(
     providerId: text('provider_id').notNull(),
     role: roleEnum('role').notNull().default('member'),
     timezone: text('timezone').notNull().default('Asia/Seoul'), // IANA timezone
+    refreshTokenHash: text('refresh_token_hash'), // SHA-256 of current refresh token jti
     loginCount: integer('login_count').notNull().default(0), // 활성 일수 카운터 (JwtGuard에서 일 1회 증가)
     lastLoginAt: timestamp('last_login_at', { withTimezone: true }), // DAU/WAU/MAU 계산용
     createdAt: timestamp('created_at', { withTimezone: true })

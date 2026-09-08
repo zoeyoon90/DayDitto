@@ -2,7 +2,6 @@ const BASE_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:3000'
 const ACCESS_TOKEN_KEY = 'access_token'
 const REFRESH_TOKEN_KEY = 'refresh_token'
 
-let isRefreshing = false
 let refreshPromise: Promise<boolean> | null = null
 
 async function refreshToken(): Promise<boolean> {
@@ -17,7 +16,10 @@ async function refreshToken(): Promise<boolean> {
     })
     if (!res.ok) return false
 
-    const data = await res.json() as { accessToken: string; refreshToken: string }
+    const data = (await res.json()) as {
+      accessToken: string
+      refreshToken: string
+    }
     localStorage.setItem(ACCESS_TOKEN_KEY, data.accessToken)
     localStorage.setItem(REFRESH_TOKEN_KEY, data.refreshToken)
     return true
@@ -26,7 +28,11 @@ async function refreshToken(): Promise<boolean> {
   }
 }
 
-export async function apiFetch<T>(path: string, init?: RequestInit): Promise<T> {
+export async function apiFetch<T>(
+  path: string,
+  init?: RequestInit,
+  _retried = false,
+): Promise<T> {
   const token = localStorage.getItem(ACCESS_TOKEN_KEY)
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
@@ -42,24 +48,22 @@ export async function apiFetch<T>(path: string, init?: RequestInit): Promise<T> 
   })
 
   if (res.status === 401) {
-    // 동시 요청 시 refresh 한 번만 수행
-    if (!isRefreshing) {
-      isRefreshing = true
-      refreshPromise = refreshToken().finally(() => {
-        isRefreshing = false
-        refreshPromise = null
-      })
+    if (!_retried) {
+      if (!refreshPromise) {
+        refreshPromise = refreshToken().finally(() => {
+          refreshPromise = null
+        })
+      }
+      const refreshed = await refreshPromise
+      if (refreshed) return apiFetch(path, init, true)
     }
-
-    const refreshed = await refreshPromise
-    if (refreshed) return apiFetch(path, init)
-
     localStorage.removeItem(ACCESS_TOKEN_KEY)
     localStorage.removeItem(REFRESH_TOKEN_KEY)
     throw new Error('AUTH_EXPIRED')
   }
 
   if (!res.ok) throw new Error(`API error: ${res.status}`)
-  if (res.status === 204 || res.headers.get('content-length') === '0') return null as T
+  if (res.status === 204 || res.headers.get('content-length') === '0')
+    return null as T
   return res.json() as Promise<T>
 }

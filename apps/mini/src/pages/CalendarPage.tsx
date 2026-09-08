@@ -7,7 +7,7 @@ import { fetchMonthlyLogs } from '@/api/logs.api'
 const WEEKDAYS = ['일', '월', '화', '수', '목', '금', '토']
 
 export function CalendarPage() {
-  const { user, authError } = useAuth()
+  const { user, authError, retryAuth } = useAuth()
   const navigate = useNavigate()
   const now = new Date()
   const [year, setYear] = useState(now.getFullYear())
@@ -47,8 +47,14 @@ export function CalendarPage() {
 
   if (authError) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-card px-4">
+      <div className="flex flex-col items-center justify-center min-h-screen bg-card px-4 gap-4">
         <p className="text-red-500 text-center">인증에 실패했습니다.<br />토스 앱에서 다시 시도해주세요.</p>
+        <button
+          onClick={retryAuth}
+          className="bg-main text-white px-6 py-2 rounded-[var(--radius-base)] text-sm"
+        >
+          다시 시도
+        </button>
       </div>
     )
   }

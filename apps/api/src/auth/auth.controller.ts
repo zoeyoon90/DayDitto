@@ -1,4 +1,12 @@
-import { Controller, Get, Post, Body, Req, UseGuards } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Req,
+  UseGuards,
+  BadRequestException,
+} from '@nestjs/common';
 import { Request } from 'express';
 import { JwtGuard } from './guards/jwt.guard';
 import { AuthService } from './auth.service';
@@ -20,12 +28,23 @@ export class AuthController {
   }
 
   @Post('toss')
-  async tossLogin(@Body() body: { authorizationCode: string }) {
-    return this.authService.loginWithTossAuthCode(body.authorizationCode);
+  async tossLogin(
+    @Body() body: { authorizationCode: string; referrer?: string },
+  ) {
+    if (!body.authorizationCode) {
+      throw new BadRequestException('authorizationCode is required');
+    }
+    return this.authService.loginWithTossAuthCode(
+      body.authorizationCode,
+      body.referrer,
+    );
   }
 
   @Post('toss/refresh')
   async tossRefresh(@Body() body: { refreshToken: string }) {
+    if (!body.refreshToken) {
+      throw new BadRequestException('refreshToken is required');
+    }
     return this.authService.refreshTossToken(body.refreshToken);
   }
 }

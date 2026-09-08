@@ -2,7 +2,7 @@ import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { createClient } from '@supabase/supabase-js';
 import * as jwt from 'jsonwebtoken';
-import * as https from 'https';
+import { Agent, fetch as undiciFetch } from 'undici';
 import * as fs from 'fs';
 import * as path from 'path';
 import * as crypto from 'crypto';
@@ -26,7 +26,7 @@ export class AuthService {
   private readonly supabaseAdmin: ReturnType<typeof createClient>;
   private readonly jwtSecret: string;
   private readonly refreshSecret: string;
-  private readonly tossApiAgent: https.Agent;
+  private readonly tossApiAgent: Agent | null = null;
   private readonly tossApiBaseUrl =
     'https://apps-in-toss-api.toss.im/api-partner/v1/apps-in-toss/user/oauth2';
 
@@ -39,18 +39,32 @@ export class AuthService {
     this.jwtSecret = configService.get<string>('TOSS_JWT_SECRET')!;
     this.refreshSecret = configService.get<string>('TOSS_REFRESH_SECRET')!;
 
-    // mTLS 클라이언트 인증서 설정 (파일 경로에서 읽기)
-    const certPath = configService.get<string>('TOSS_MTLS_CERT_PATH')!;
-    const keyPath = configService.get<string>('TOSS_MTLS_KEY_PATH')!;
-    this.tossApiAgent = new https.Agent({
-      cert: fs.readFileSync(path.resolve(certPath)),
-      key: fs.readFileSync(path.resolve(keyPath)),
-    });
+    // mTLS 클라이언트 인증서 설정 (없으면 토스 로그인만 비활성화)
+    try {
+      const certPath = configService.get<string>('TOSS_MTLS_CERT_PATH');
+      const keyPath = configService.get<string>('TOSS_MTLS_KEY_PATH');
+      if (certPath && keyPath) {
+        this.tossApiAgent = new Agent({
+          connect: {
+            cert: fs.readFileSync(path.resolve(certPath)),
+            key: fs.readFileSync(path.resolve(keyPath)),
+          },
+        });
+      }
+    } catch {
+      // 인증서 없으면 토스 로그인 비활성화 (web/admin은 정상 동작)
+    }
   }
 
-  async loginWithTossAuthCode(authorizationCode: string) {
+  async loginWithTossAuthCode(
+    authorizationCode: string,
+    referrer?: string,
+  ) {
     // 1. mTLS로 토스 API에 인가코드 교환
-    const tossTokens = await this.exchangeTossToken(authorizationCode);
+    const tossTokens = await this.exchangeTossToken(
+      authorizationCode,
+      referrer,
+    );
 
     // 2. 토스 accessToken으로 유저 정보 조회
     const tossUser = await this.getTossUserInfo(tossTokens.accessToken);
@@ -61,7 +75,7 @@ export class AuthService {
     // 4. 자체 JWT 발급
     return {
       accessToken: this.signJwt(user.id),
-      refreshToken: this.signRefreshToken(user.id),
+      refreshToken: await this.signRefreshToken(user.id),
       user: {
         id: user.id,
         nickname: user.nickname,
@@ -76,7 +90,8 @@ export class AuthService {
         refreshToken,
         this.refreshSecret,
       ) as jwt.JwtPayload;
-      if (payload.type !== 'refresh') throw new Error('invalid token type');
+      if (payload.type !== 'refresh' || !payload.jti)
+        throw new Error('invalid token type');
 
       const userId = payload.sub!;
       const [dbUser] = await db
@@ -85,9 +100,17 @@ export class AuthService {
         .where(eq(users.id, userId));
       if (!dbUser) throw new Error('user not found');
 
+      // jti 해시 대조 — 불일치면 재사용 탐지
+      const hash = crypto
+        .createHash('sha256')
+        .update(payload.jti)
+        .digest('hex');
+      if (dbUser.refreshTokenHash !== hash)
+        throw new Error('token reused');
+
       return {
         accessToken: this.signJwt(userId),
-        refreshToken: this.signRefreshToken(userId),
+        refreshToken: await this.signRefreshToken(userId),
       };
     } catch {
       throw new UnauthorizedException('Invalid refresh token');
@@ -96,12 +119,16 @@ export class AuthService {
 
   private async exchangeTossToken(
     authorizationCode: string,
+    referrer?: string,
   ): Promise<TossTokenResponse> {
-    const res = await fetch(`${this.tossApiBaseUrl}/generate-token`, {
+    if (!this.tossApiAgent) {
+      throw new UnauthorizedException('Toss login not configured');
+    }
+
+    const res = await undiciFetch(`${this.tossApiBaseUrl}/generate-token`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ authorizationCode }),
-      // @ts-expect-error Node.js fetch supports dispatcher for custom agent
+      body: JSON.stringify({ authorizationCode, referrer }),
       dispatcher: this.tossApiAgent,
     });
 
@@ -118,9 +145,12 @@ export class AuthService {
   private async getTossUserInfo(
     accessToken: string,
   ): Promise<TossUserResponse> {
-    const res = await fetch(`${this.tossApiBaseUrl}/login-me`, {
+    if (!this.tossApiAgent) {
+      throw new UnauthorizedException('Toss login not configured');
+    }
+
+    const res = await undiciFetch(`${this.tossApiBaseUrl}/login-me`, {
       headers: { Authorization: `Bearer ${accessToken}` },
-      // @ts-expect-error Node.js fetch supports dispatcher for custom agent
       dispatcher: this.tossApiAgent,
     });
 
@@ -177,9 +207,17 @@ export class AuthService {
     );
   }
 
-  private signRefreshToken(userId: string): string {
+  private async signRefreshToken(userId: string): Promise<string> {
+    const jti = crypto.randomUUID();
+    const hash = crypto.createHash('sha256').update(jti).digest('hex');
+
+    await db
+      .update(users)
+      .set({ refreshTokenHash: hash })
+      .where(eq(users.id, userId));
+
     return jwt.sign(
-      { sub: userId, type: 'refresh' },
+      { sub: userId, type: 'refresh', jti },
       this.refreshSecret,
       { expiresIn: '14d' },
     );

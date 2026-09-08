@@ -1,4 +1,4 @@
 packages:
   - "apps/*"
-  - "!apps/mini"
+  - "!apps/mini"  # ait CLI가 pnpm 심볼릭 링크 비호환 → npm 독립 관리
   - "packages/*"
