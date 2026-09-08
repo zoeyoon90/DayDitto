@@ -40,6 +40,14 @@ export class AuthController {
     );
   }
 
+  @Post('toss/anon')
+  async tossAnonLogin(@Body() body: { hash: string }) {
+    if (!body.hash) {
+      throw new BadRequestException('hash is required');
+    }
+    return this.authService.loginWithTossAnonKey(body.hash);
+  }
+
   @Post('toss/refresh')
   async tossRefresh(@Body() body: { refreshToken: string }) {
     if (!body.refreshToken) {

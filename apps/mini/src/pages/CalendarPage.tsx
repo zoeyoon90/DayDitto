@@ -49,6 +49,7 @@ export function CalendarPage() {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen bg-card px-4 gap-4">
         <p className="text-red-500 text-center">인증에 실패했습니다.<br />토스 앱에서 다시 시도해주세요.</p>
+        <p className="text-xs text-red-400 text-center break-all px-2">{authError}</p>
         <button
           onClick={retryAuth}
           className="bg-main text-white px-6 py-2 rounded-[var(--radius-base)] text-sm"
