@@ -1,0 +1,54 @@
+import { createPortal } from 'react-dom'
+import { useEffect } from 'react'
+
+export type FontKey = 'yeongwol' | 'sejong-geulggot' | 'kyobo' | 'lxgw'
+
+export const FONTS: { key: FontKey; label: string; cssVar: string }[] = [
+  { key: 'yeongwol', label: '영월체', cssVar: 'var(--font-yeongwol)' },
+  { key: 'sejong-geulggot', label: '세종글꽃체', cssVar: 'var(--font-sejong-geulggot)' },
+  { key: 'kyobo', label: '교보손글씨체', cssVar: 'var(--font-kyobo)' },
+  { key: 'lxgw', label: 'LXGW WenKai', cssVar: 'var(--font-lxgw)' },
+]
+
+interface Props {
+  currentFont: FontKey
+  onSelect: (key: FontKey) => void
+  onClose: () => void
+}
+
+export default function FontPickerModal({ currentFont, onSelect, onClose }: Props) {
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose() }
+    window.addEventListener('keydown', handler)
+    return () => window.removeEventListener('keydown', handler)
+  }, [onClose])
+
+  return createPortal(
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30" onClick={onClose}>
+      <div
+        className="bg-card border-2 border-border shadow-shadow rounded-base p-4 flex flex-col gap-3 min-w-48"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <p className="text-sm text-foreground/70">폰트 선택</p>
+        <div className="flex flex-col gap-2">
+          {FONTS.map((f) => (
+            <button
+              key={f.key}
+              onClick={() => { onSelect(f.key); onClose() }}
+              className={`flex flex-col items-start px-3 py-2 rounded-base border-2 transition-colors ${
+                currentFont === f.key
+                  ? 'border-border bg-main shadow-shadow'
+                  : 'border-border/40 hover:border-border hover:bg-main/30'
+              }`}
+              style={{ fontFamily: f.cssVar }}
+            >
+              <span className="text-sm text-foreground">{f.label}</span>
+              <span className="text-xs text-foreground/50">가나다 Abc</span>
+            </button>
+          ))}
+        </div>
+      </div>
+    </div>,
+    document.body,
+  )
+}
