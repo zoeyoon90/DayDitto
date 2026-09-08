@@ -56,6 +56,14 @@ export class AuthService {
     }
   }
 
+  async loginWithTossAnonKey(anonKey: string) {
+    const user = await this.findOrCreateTossUser(anonKey);
+    return {
+      accessToken: this.signJwt(user.id),
+      refreshToken: await this.signRefreshToken(user.id),
+    };
+  }
+
   async loginWithTossAuthCode(authorizationCode: string, referrer?: string) {
     // 1. mTLS로 토스 API에 인가코드 교환
     const tossTokens = await this.exchangeTossToken(
