@@ -17,6 +17,7 @@ import { users, loginLogs } from '../../db/schema';
 export class JwtGuard implements CanActivate {
   private readonly jwksClient: jwksRsa.JwksClient;
   private readonly supabaseAdmin: ReturnType<typeof createClient>;
+  private readonly tossJwtSecret: string;
 
   constructor(configService: ConfigService) {
     const supabaseUrl = configService.get<string>('SUPABASE_URL')!;
@@ -36,6 +37,8 @@ export class JwtGuard implements CanActivate {
     this.supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey, {
       auth: { persistSession: false },
     });
+
+    this.tossJwtSecret = configService.get<string>('TOSS_JWT_SECRET') ?? '';
   }
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
@@ -43,7 +46,62 @@ export class JwtGuard implements CanActivate {
     const token = this.extractToken(request);
     if (!token) throw new UnauthorizedException();
 
-    // 로컬 JWT 검증 (Supabase HTTP 콜 없음)
+    // 자체 JWT (토스 anonKey) 먼저 시도
+    const tossPayload = this.verifyTossJwt(token);
+    if (tossPayload) {
+      return this.handleTossUser(request, tossPayload);
+    }
+
+    // Supabase JWT 검증
+    return this.handleSupabaseUser(request, token);
+  }
+
+  private verifyTossJwt(token: string): jwt.JwtPayload | null {
+    if (!this.tossJwtSecret) return null;
+    try {
+      const payload = jwt.verify(token, this.tossJwtSecret) as jwt.JwtPayload;
+      if (payload.iss === 'dayditto' && payload.provider === 'toss') {
+        return payload;
+      }
+      return null;
+    } catch {
+      return null;
+    }
+  }
+
+  private async handleTossUser(
+    request: Request,
+    payload: jwt.JwtPayload,
+  ): Promise<boolean> {
+    const userId = payload.sub!;
+
+    const [dbUser] = await db
+      .select({
+        role: users.role,
+        nickname: users.nickname,
+        email: users.email,
+      })
+      .from(users)
+      .where(eq(users.id, userId));
+
+    if (!dbUser) throw new UnauthorizedException();
+
+    (request as Request & { user: unknown }).user = {
+      id: userId,
+      email: dbUser.email ?? '',
+      nickname: dbUser.nickname,
+      provider: 'toss',
+      role: dbUser.role ?? 'member',
+    };
+
+    await this.trackLogin(userId);
+    return true;
+  }
+
+  private async handleSupabaseUser(
+    request: Request,
+    token: string,
+  ): Promise<boolean> {
     let payload: jwt.JwtPayload;
     try {
       const decoded = jwt.decode(token, { complete: true });
@@ -107,8 +165,11 @@ export class JwtGuard implements CanActivate {
       role: dbUser?.role ?? 'member',
     };
 
-    // KST 기준 오늘 login_log INSERT (atomic)
-    // UNIQUE(user_id, date) + ON CONFLICT DO NOTHING → 병렬 요청 race condition 원천 차단
+    await this.trackLogin(userId);
+    return true;
+  }
+
+  private async trackLogin(userId: string): Promise<void> {
     const [inserted] = await db
       .insert(loginLogs)
       .values({
@@ -127,8 +188,6 @@ export class JwtGuard implements CanActivate {
         })
         .where(eq(users.id, userId));
     }
-
-    return true;
   }
 
   private extractToken(request: Request): string | null {

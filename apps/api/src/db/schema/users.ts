@@ -13,7 +13,12 @@ import {
 const authSchema = pgSchema('auth');
 const authUsers = authSchema.table('users', { id: uuid('id') });
 
-export const providerEnum = pgEnum('provider', ['kakao', 'google', 'email']);
+export const providerEnum = pgEnum('provider', [
+  'kakao',
+  'google',
+  'email',
+  'toss',
+]);
 export const roleEnum = pgEnum('role', ['member', 'admin']);
 
 export const users = pgTable(
