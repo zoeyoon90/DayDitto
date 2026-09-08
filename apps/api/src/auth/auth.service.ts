@@ -198,7 +198,7 @@ export class AuthService {
       }
       authUserId = existingAuth.id;
     } else {
-      authUserId = data.user!.id;
+      authUserId = data.user.id;
     }
 
     // auth.users에 이미 대응하는 public.users 레코드가 있을 수 있음
