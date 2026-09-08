@@ -7,10 +7,12 @@ async function bootstrap() {
   app.enableCors({
     origin: [
       'http://localhost:5006',
-      'http://localhost:5007',
+      'http://localhost:5173',
       'https://dayditto.co.kr',
       'https://www.dayditto.co.kr',
       'https://admin.dayditto.co.kr',
+      'https://dayditto.web.tossmini.com',
+      'https://dayditto.private-web.tossmini.com',
     ],
     credentials: true,
     allowedHeaders: ['Authorization', 'Content-Type'],

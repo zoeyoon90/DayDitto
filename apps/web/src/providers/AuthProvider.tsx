@@ -24,7 +24,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return () => document.removeEventListener('visibilitychange', clearBadge);
   }, []);
 
-  // 유저 전환 시 캐시 정리 (로그인/로그아웃/회원가입 모두 포착)
   useEffect(() => {
     const supabase = createClient();
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
