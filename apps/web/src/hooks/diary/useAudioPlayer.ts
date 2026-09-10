@@ -68,29 +68,33 @@ export function useAudioPlayer(
     stopCurrent()
     setPlayingAll(true)
 
-    const playNext = async (index: number) => {
-      if (index >= englishLines.length) {
+    // Prefetch all URLs before starting playback
+    const allUrls: (string | null)[] = []
+    for (let i = 0; i < englishLines.length; i++) {
+      allUrls.push(await getOrFetchUrl(i))
+    }
+
+    // Single Audio element created in user gesture context (mobile-safe)
+    const audio = new Audio()
+    audioRef.current = audio
+    let idx = 0
+
+    const playNext = () => {
+      while (idx < allUrls.length && !allUrls[idx]) idx++
+      if (idx >= allUrls.length) {
         setPlayingAll(false)
         setPlayingIndex(null)
+        audioRef.current = null
         return
       }
-      if (!englishLines[index]) {
-        playNext(index + 1)
-        return
-      }
-      const url = await getOrFetchUrl(index)
-      if (!url) {
-        playNext(index + 1)
-        return
-      }
-      const audio = new Audio(url)
-      audioRef.current = audio
-      setPlayingIndex(index)
-      audio.onended = () => playNext(index + 1)
+      audio.src = allUrls[idx]!
+      setPlayingIndex(idx)
+      idx++
       audio.play()
     }
 
-    playNext(0)
+    audio.onended = playNext
+    playNext()
   }
 
   const mergedUrls = lineAudioUrls.map((u, i) => urls[i] ?? u)
