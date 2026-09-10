@@ -5,6 +5,7 @@ import { createLog, translateText, uploadImage } from '@/api/logs.api'
 import { Button } from '@/components/Button'
 import DayMeta from '@/components/DayMeta'
 import FontPickerModal, { type FontKey, FONTS } from '@/components/FontPickerModal'
+import GifPickerModal from '@/components/GifPickerModal'
 
 export function WritePage() {
   const navigate = useNavigate()
@@ -18,6 +19,7 @@ export function WritePage() {
   const [imageUrl, setImageUrl] = useState<string | null>(null)
   const [font, setFont] = useState<FontKey>('yeongwol')
   const [showFontModal, setShowFontModal] = useState(false)
+  const [showGifModal, setShowGifModal] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   const uploadMutation = useMutation({
@@ -26,8 +28,8 @@ export function WritePage() {
   })
 
   const translateMutation = useMutation({
-    mutationFn: (text: string) => translateText(text),
-    onSuccess: (data) => setEnglish(data.translated),
+    mutationFn: (text: string) => translateText(text.split('\n').filter(Boolean)),
+    onSuccess: (data) => setEnglish(data.translations.join('\n')),
   })
 
   const saveMutation = useMutation({
@@ -89,6 +91,12 @@ export function WritePage() {
             {uploadMutation.isPending ? '업로드 중...' : imageUrl ? '이미지 변경' : '이미지 추가'}
           </button>
           <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handleFileChange} />
+          <button
+            onClick={() => setShowGifModal(true)}
+            className="px-3 h-7 border-2 border-border bg-card rounded-base text-xs text-foreground/80 shadow-shadow hover:translate-x-boxShadowX hover:translate-y-boxShadowY hover:shadow-none transition-all"
+          >
+            GIF
+          </button>
           <button
             onClick={() => setShowFontModal(true)}
             className="px-3 h-7 border-2 border-border bg-card rounded-base text-xs text-foreground/80 shadow-shadow hover:translate-x-boxShadowX hover:translate-y-boxShadowY hover:shadow-none transition-all"
@@ -174,6 +182,9 @@ export function WritePage() {
 
       {showFontModal && (
         <FontPickerModal currentFont={font} onSelect={setFont} onClose={() => setShowFontModal(false)} />
+      )}
+      {showGifModal && (
+        <GifPickerModal onSelect={(url) => setImageUrl(url)} onClose={() => setShowGifModal(false)} />
       )}
     </div>
   )
