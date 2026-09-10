@@ -50,16 +50,25 @@ export function DetailPage() {
       urls = result.lineAudioUrls
     }
 
-    for (let i = 0; i < urls.length; i++) {
-      setPlayingIndex(i)
-      await new Promise<void>((resolve) => {
-        const audio = new Audio(urls![i])
-        audioRef.current = audio
-        audio.onended = () => resolve()
-        audio.play()
-      })
+    // Single Audio element created in user gesture context (mobile-safe)
+    const audio = new Audio()
+    audioRef.current = audio
+    let idx = 0
+
+    const playNext = () => {
+      if (idx >= urls!.length) {
+        setPlayingIndex(null)
+        audioRef.current = null
+        return
+      }
+      audio.src = urls![idx]
+      setPlayingIndex(idx)
+      idx++
+      audio.play()
     }
-    setPlayingIndex(null)
+
+    audio.onended = playNext
+    playNext()
   }
 
   if (isLoading) {
