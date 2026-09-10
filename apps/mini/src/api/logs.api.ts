@@ -17,10 +17,10 @@ export const createLog = (body: {
   font?: string
 }) => apiFetch<{ id: string }>('/daily-logs', { method: 'POST', body: JSON.stringify(body) })
 
-export const translateText = (text: string) =>
-  apiFetch<{ translated: string }>('/daily-logs/translate', {
+export const translateText = (lines: string[]) =>
+  apiFetch<{ translations: string[] }>('/translate', {
     method: 'POST',
-    body: JSON.stringify({ text }),
+    body: JSON.stringify({ lines }),
   })
 
 export const uploadImage = async (file: File): Promise<{ url: string }> => {
