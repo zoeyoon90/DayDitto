@@ -117,7 +117,7 @@ export function DetailPage() {
       {/* Image */}
       {log.imageUrl && (
         <div className="mb-4 border-2 border-border rounded-base overflow-hidden shadow-shadow">
-          <img src={log.imageUrl} alt="일기 이미지" className="w-full max-h-56 object-cover" />
+          <img src={log.imageUrl} alt="일기 이미지" loading="lazy" className="w-full max-h-56 object-cover" />
         </div>
       )}
 

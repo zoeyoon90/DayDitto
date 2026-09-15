@@ -1,4 +1,5 @@
-import { useState, useRef } from 'react'
+import { useState, useRef, useMemo, useEffect } from 'react'
+import { createPortal } from 'react-dom'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { useMutation } from '@tanstack/react-query'
 import { createLog, uploadImage, ttsBatch } from '@/api/logs.api'
@@ -18,24 +19,38 @@ export function WritePage() {
   const [mood, setMood] = useState<string | null>(null)
   const [weather, setWeather] = useState<string | null>(null)
   const [imageUrl, setImageUrl] = useState<string | null>(null)
+  const [imageFile, setImageFile] = useState<File | null>(null)
   const [font, setFont] = useState<FontKey>('yeongwol')
   const [showFontModal, setShowFontModal] = useState(false)
   const [showGifModal, setShowGifModal] = useState(false)
+  const [showImagePreview, setShowImagePreview] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
+
+  const previewUrl = useMemo(
+    () => (imageFile ? URL.createObjectURL(imageFile) : null),
+    [imageFile],
+  )
+
+  useEffect(() => {
+    return () => {
+      if (previewUrl) URL.revokeObjectURL(previewUrl)
+    }
+  }, [previewUrl])
 
   const { lines, focusLineId, addLineAfter, removeLine, updateLine, applyTranslations } =
     useDiaryLines()
   const { isTranslating, handleTranslate } = useDiaryTranslation(lines, applyTranslations)
 
-  const uploadMutation = useMutation({
-    mutationFn: (file: File) => uploadImage(file),
-    onSuccess: (data) => setImageUrl(data.url),
-  })
-
   const saveMutation = useMutation({
     mutationFn: async () => {
       const koreanContent = lines.map((l) => l.korean).filter(Boolean).join('\n')
       const englishContent = lines.map((l) => l.english).filter(Boolean).join('\n') || undefined
+
+      let finalImageUrl = imageUrl || undefined
+      if (imageFile) {
+        const { url } = await uploadImage(imageFile)
+        finalImageUrl = url
+      }
 
       const { id } = await createLog({
         logDate: dateParam,
@@ -43,7 +58,7 @@ export function WritePage() {
         englishContent,
         mood: mood || undefined,
         weather: weather || undefined,
-        imageUrl: imageUrl || undefined,
+        imageUrl: finalImageUrl,
         font,
       })
 
@@ -60,7 +75,16 @@ export function WritePage() {
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
-    if (file) uploadMutation.mutate(file)
+    if (file) {
+      setImageFile(file)
+      setImageUrl(null)
+    }
+  }
+
+  const clearImage = () => {
+    setImageFile(null)
+    setImageUrl(null)
+    if (fileInputRef.current) fileInputRef.current.value = ''
   }
 
   const hasContent = lines.some((l) => l.korean.trim())
@@ -98,11 +122,28 @@ export function WritePage() {
           <DayMeta mood={mood} weather={weather} onMoodChange={setMood} onWeatherChange={setWeather} />
         </div>
         <div className="flex items-center gap-2 justify-center">
+          {(previewUrl || imageUrl) && (
+            <div className="relative">
+              <button onClick={() => setShowImagePreview(true)}>
+                <img
+                  src={(previewUrl || imageUrl)!}
+                  alt="프리뷰"
+                  className="w-10 h-10 rounded-base border-2 border-border object-cover"
+                />
+              </button>
+              <button
+                onClick={clearImage}
+                className="absolute -top-1.5 -right-1.5 w-4 h-4 rounded-full bg-black/60 text-white text-[10px] flex items-center justify-center"
+              >
+                &times;
+              </button>
+            </div>
+          )}
           <button
             onClick={() => fileInputRef.current?.click()}
             className="px-3 h-7 border-2 border-border bg-card rounded-base text-xs text-foreground/80 shadow-shadow hover:translate-x-boxShadowX hover:translate-y-boxShadowY hover:shadow-none transition-all"
           >
-            {uploadMutation.isPending ? '업로드 중...' : imageUrl ? '이미지 변경' : '이미지 추가'}
+            {imageFile || imageUrl ? '변경' : '이미지'}
           </button>
           <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handleFileChange} />
           <button
@@ -119,13 +160,6 @@ export function WritePage() {
           </button>
         </div>
       </div>
-
-      {/* Image preview */}
-      {imageUrl && (
-        <div className="mb-4 border-2 border-border rounded-base overflow-hidden shadow-shadow">
-          <img src={imageUrl} alt="업로드 이미지" className="w-full max-h-48 object-cover" />
-        </div>
-      )}
 
       {/* Notebook diary lines */}
       <div className="border-2 border-border shadow-shadow rounded-base overflow-x-auto mb-4">
@@ -175,7 +209,7 @@ export function WritePage() {
       </Button>
 
       {/* Error */}
-      {(saveMutation.isError || uploadMutation.isError) && (
+      {saveMutation.isError && (
         <p className="text-red-500 text-sm mt-2">오류가 발생했습니다. 다시 시도해주세요.</p>
       )}
 
@@ -183,7 +217,18 @@ export function WritePage() {
         <FontPickerModal currentFont={font} onSelect={setFont} onClose={() => setShowFontModal(false)} />
       )}
       {showGifModal && (
-        <GifPickerModal onSelect={(url) => setImageUrl(url)} onClose={() => setShowGifModal(false)} />
+        <GifPickerModal onSelect={(url) => { setImageUrl(url); setImageFile(null) }} onClose={() => setShowGifModal(false)} />
+      )}
+      {showImagePreview && (previewUrl || imageUrl) && createPortal(
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50" onClick={() => setShowImagePreview(false)}>
+          <img
+            src={(previewUrl || imageUrl)!}
+            alt="확대 이미지"
+            className="max-w-sm max-h-[60vh] rounded-base border-2 border-border object-contain"
+            onClick={(e) => e.stopPropagation()}
+          />
+        </div>,
+        document.body,
       )}
     </div>
   )
