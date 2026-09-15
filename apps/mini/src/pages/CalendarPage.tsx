@@ -114,7 +114,7 @@ export function CalendarPage() {
                     }`}
                   >
                     {logInfo.imageUrl ? (
-                      <img src={logInfo.imageUrl} alt="" className="absolute inset-0 w-full h-full object-cover" />
+                      <img src={logInfo.imageUrl} alt="" loading="lazy" className="absolute inset-0 w-full h-full object-cover" />
                     ) : null}
                     <span className={`relative z-10 text-[10px] font-bold p-0.5 ${
                       logInfo.imageUrl ? 'text-bw drop-shadow-sm' : 'text-foreground'
