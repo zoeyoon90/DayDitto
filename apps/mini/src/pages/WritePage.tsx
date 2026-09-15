@@ -1,4 +1,5 @@
 import { useState, useRef, useMemo, useEffect } from 'react'
+import { createPortal } from 'react-dom'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { useMutation } from '@tanstack/react-query'
 import { createLog, uploadImage, ttsBatch } from '@/api/logs.api'
@@ -22,6 +23,7 @@ export function WritePage() {
   const [font, setFont] = useState<FontKey>('yeongwol')
   const [showFontModal, setShowFontModal] = useState(false)
   const [showGifModal, setShowGifModal] = useState(false)
+  const [showImagePreview, setShowImagePreview] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   const previewUrl = useMemo(
@@ -120,11 +122,28 @@ export function WritePage() {
           <DayMeta mood={mood} weather={weather} onMoodChange={setMood} onWeatherChange={setWeather} />
         </div>
         <div className="flex items-center gap-2 justify-center">
+          {(previewUrl || imageUrl) && (
+            <div className="relative">
+              <button onClick={() => setShowImagePreview(true)}>
+                <img
+                  src={(previewUrl || imageUrl)!}
+                  alt="프리뷰"
+                  className="w-10 h-10 rounded-base border-2 border-border object-cover"
+                />
+              </button>
+              <button
+                onClick={clearImage}
+                className="absolute -top-1.5 -right-1.5 w-4 h-4 rounded-full bg-black/60 text-white text-[10px] flex items-center justify-center"
+              >
+                &times;
+              </button>
+            </div>
+          )}
           <button
             onClick={() => fileInputRef.current?.click()}
             className="px-3 h-7 border-2 border-border bg-card rounded-base text-xs text-foreground/80 shadow-shadow hover:translate-x-boxShadowX hover:translate-y-boxShadowY hover:shadow-none transition-all"
           >
-            {imageFile || imageUrl ? '이미지 변경' : '이미지 추가'}
+            {imageFile || imageUrl ? '변경' : '이미지'}
           </button>
           <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handleFileChange} />
           <button
@@ -141,19 +160,6 @@ export function WritePage() {
           </button>
         </div>
       </div>
-
-      {/* Image preview */}
-      {(previewUrl || imageUrl) && (
-        <div className="relative mb-4 border-2 border-border rounded-base overflow-hidden shadow-shadow">
-          <img src={(previewUrl || imageUrl)!} alt="업로드 이미지" className="w-full max-h-48 object-cover" />
-          <button
-            onClick={clearImage}
-            className="absolute top-1 right-1 w-6 h-6 rounded-full bg-black/50 text-white text-xs flex items-center justify-center"
-          >
-            &times;
-          </button>
-        </div>
-      )}
 
       {/* Notebook diary lines */}
       <div className="border-2 border-border shadow-shadow rounded-base overflow-x-auto mb-4">
@@ -212,6 +218,17 @@ export function WritePage() {
       )}
       {showGifModal && (
         <GifPickerModal onSelect={(url) => { setImageUrl(url); setImageFile(null) }} onClose={() => setShowGifModal(false)} />
+      )}
+      {showImagePreview && (previewUrl || imageUrl) && createPortal(
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50" onClick={() => setShowImagePreview(false)}>
+          <img
+            src={(previewUrl || imageUrl)!}
+            alt="확대 이미지"
+            className="max-w-sm max-h-[60vh] rounded-base border-2 border-border object-contain"
+            onClick={(e) => e.stopPropagation()}
+          />
+        </div>,
+        document.body,
       )}
     </div>
   )
